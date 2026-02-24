@@ -15,9 +15,14 @@
             }
             body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; transition: all 0.3s ease; }
             
-            /* HEADER */
+            /* HEADER & CLOCK */
             header { background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }
             
+            .clock-widget { display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; gap: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); margin-left: 20px; }
+            .clock-time { font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--text-bold); letter-spacing: 1px; min-width: 80px; text-align: center; }
+            .clock-select { background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }
+            .clock-select option { background: var(--card); color: var(--text-bold); }
+
             /* TOGGLE BUTTON */
             .theme-toggle-container { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
             .theme-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-bold); }
@@ -59,9 +64,24 @@
     </head>
     <body>
         <header>
-            <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
-                <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+            <div style="display:flex; align-items:center;">
+                <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
+                    <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+                </div>
+                
+                <div class="clock-widget">
+                    <span id="live-clock" class="clock-time">00:00:00</span>
+                    <select id="tz-select" class="clock-select" onchange="changeTimezone()">
+                        <option value="local">Local Time</option>
+                        <option value="America/New_York">New York (EST)</option>
+                        <option value="Europe/London">London (GMT)</option>
+                        <option value="Asia/Tokyo">Tokyo (JST)</option>
+                        <option value="Australia/Sydney">Sydney (AEST)</option>
+                        <option value="UTC">UTC</option>
+                    </select>
+                </div>
             </div>
+
             <div style="display:flex; align-items:center; gap:30px;">
                 <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Actualizat: 24-02-2026</span>
                 <div class="theme-toggle-container" onclick="toggleTheme()">
@@ -113,23 +133,25 @@
                 <a href="https://news.google.com/rss/articles/CBMihwFBVV95cUxPQ1I3a0VMSDU1ZkNRSUJOVjVUaS12WDUxQTZtNk16bVFrTWVsdk5hMUxLVDJUYndPa0VRLUpXVW9FSlIzRnBTUTFnVGMtY3psa1JSalV1OW81RjJoeGRzZmk2N0N3c2htOTkxQkNlenNkT1luSTFWRFNLS1pkd1doa25ELWt0ckU?oc=5" class="title" target="_blank">Fresh from the Trading Room: The boiling point - CME Group</a>
                 
                 <div class="section-title">📊 CONTEXT MACRO</div>
-                <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
+                <p class="text-content">Piața petrolului WTI este la o răscruce, definită de o combinație complexă de tensiuni geopolitice, decizii privind oferta OPEC+ și perspective macroeconomice globale ce influențează cererea. Această confluență creează un mediu de volatilitate crescută, unde orice eveniment catalizator poate iniția o mișcare de preț bruscă și amplă.</p>
                 
                 <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
                 <div class="pros-cons-grid">
                     <div class="box pro">
                         <strong>BULLISH FACTORS</strong>
-                        -
+                           Escaladarea rapidă a tensiunilor geopolitice sau restricționarea neașteptată a ofertei pot genera o creștere explozivă a prețurilor.
+   O revigorare robustă a cererii globale sau un sezon de consum puternic ar putea oferi un sprijin substanțial prețurilor.
                     </div>
                     <div class="box con">
                         <strong>BEARISH RISKS</strong>
-                        -
+                           Detensionarea rapidă a conflictelor sau o creștere neașteptată a ofertei ar putea duce la o corecție bruscă a prețurilor.
+   Semnele de încetinire economică globală sau o reducere sub așteptări a cererii ar exercita o presiune descendentă semnificativă.
                     </div>
                 </div>
                 
                 <div class="action-box">
                     <span style="font-size: 18px;">🎯</span> 
-                    <div>-</div>
+                    <div>Rămânem vigilenți la nivelurile critice de suport și rezistență, alături de știrile geopolitice și rapoartele privind stocurile, pregătindu-ne pentru o volatilitate exacerbată și o potențială spargere a intervalului.</div>
                 </div>
             </div>
         
@@ -165,31 +187,29 @@
             <div class="card">
                 <div class="card-header">
                     <span class="market-tag">GBPUSD</span>
-                    <span class="badge" style="background:#26a69a;">Pozitiv</span>
+                    <span class="badge" style="background:#787b86;">Neutru</span>
                 </div>
                 
                 <a href="https://news.google.com/rss/articles/CBMigAFBVV95cUxNSnhLV1ZNUVNfd2JtZ0t3anlGaXdwRERYLWdXOF84eGUyZTgzaWJEZ25veHBjd1lsN2s0OFZHVS1CSy0wSWhqc3FIbXI0SE50TWdzS25na3FSR18wTUdvM09DaW9kTEFMR1d5LUhzUlBSUnJycnJ4Y0JZcVE0MlpIRA?oc=5" class="title" target="_blank">GBP/USD – A Breakout Opportunity - Investing.com</a>
                 
                 <div class="section-title">📊 CONTEXT MACRO</div>
-                <p class="text-content">Contextul macro pentru GBP/USD este definit de divergențele politicilor monetare ale BoE și Fed, precum și de dinamica inflației și a creșterii economice în Marea Britanie și SUA. O spargere validă ar putea fi alimentată de date economice iminente sau de modificări în retorica băncilor centrale, propulsând perechea dintr-o perioadă de consolidare.</p>
+                <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
                 
                 <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
                 <div class="pros-cons-grid">
                     <div class="box pro">
                         <strong>BULLISH FACTORS</strong>
-                        - Oportunitate de a capitaliza pe o mișcare direcțională puternică, cu un potențial bun de profit.
-- Volatilitatea crescută, specifică breakout-urilor, poate genera un raport risc-recompensă superior la o intrare optimă.
+                        -
                     </div>
                     <div class="box con">
                         <strong>BEARISH RISKS</strong>
-                        - Risc ridicat de false breakout-uri, care pot antrena stop-loss-uri și whipsaw.
-- Necesitatea unei gestionări stricte a riscului, având în vedere potențialul unor mișcări bruște și ample.
+                        -
                     </div>
                 </div>
                 
                 <div class="action-box">
                     <span style="font-size: 18px;">🎯</span> 
-                    <div>Monitorizați cu atenție nivelurile de rezistență și suport cheie, așteptând confirmarea spargerii cu volume semnificative înainte de a iniția poziții.</div>
+                    <div>-</div>
                 </div>
             </div>
         
@@ -257,7 +277,7 @@
                     <span class="badge" style="background:#787b86;">Neutru</span>
                 </div>
                 
-                <a href="https://news.google.com/rss/articles/CBMi5gFBVV95cUxOX2JzaEFacWNfWm1mcXQ1a01FTjYzbllUdHZSb2R6cnA0eDEwTjV5cDQ1VDBOM090WHpEY0tpa3FRb19Gd2xJbXRqQ2MweVRJbHM4QmNPR0ZRX21qMmpJWXdfSkRxOFZLaG1FOTNHemY1NUxzaUl6cnZ3VlFCMnBERDNOYTNTRGtwUF9UWWxTRThLWDFYUFdKSEpzbXpYMkxjemUtSHNod3hKaXU0amZ0TVhHdmZJOFg2WlFpcnVMZkZrM2NFTkREaDI3Vl9NRDdEM0RzdmVGVDJ2WlN1QzA2N2lTQlA4Zw?oc=5" class="title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq mixed after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance UK</a>
+                <a href="https://news.google.com/rss/articles/CBMi7gFBVV95cUxNZV9Ja0xQTE1qMk5LQkRjLVlWc0poQXowTWVqUHdyWXgwZTJCSlROVmIxTXR3WWpVeU9iaEd6Rl9DM3E3djJfekNJQXhCUy0yd2hOWVhnc0NsRy12ckFvaUtGUXoxY0ZVVDNpTHR2bS02YmVDR3JnNy1LMzdnZ1FxdV95MDdZeThGOHJSQ0RZd3U0WVRzUjdQYUhEOGNidVdHbDBUaHdTRHNGUURjZHZzMGgtVXVpTnZvNDhfbTcxWUhoOE5pSkFfM1M0V0YwY0dvTEhhNUxmalJlNU5TWVY5LWNmakRucTYycUlPQmd3?oc=5" class="title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq futures tick up after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance</a>
                 
                 <div class="section-title">📊 CONTEXT MACRO</div>
                 <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
@@ -315,7 +335,7 @@
                     <span class="badge" style="background:#787b86;">Neutru</span>
                 </div>
                 
-                <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxNak5XaXhPbXJzc0tOQWFwSlJHSzkyaTJkVlBfc3QtdW40UDlpd0EtLUw2bHBEOXg0S1pPdmh6Q1BzNzFscVdINFJlSGpGY3hMQWl3NFQxU0l6enBGbGpvUUM4TXJ1M2FPSWIxdGhsbnBSeWtMa0tiZ2xhTFhMeWRxTnB1dzQ?oc=5" class="title" target="_blank">Apple’s Stock Recovery Is No Recovery At All - Yahoo Finance</a>
+                <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxQdGJGRDZGRGIyamVxaE1XcUJXSGZ0c1VlenFpR3RCTGlMbEdTczZGc1duX3EwN3R0NDIwVHh2anEyMTFOUGNHV1dfUnltdDRUVnVWV3FFMVpIaFgxTkk4R2JFaUd3Rlp4aG1reXZ2c1g1bGY0M24wZC1ScW1rVzVDX19HLTI?oc=5" class="title" target="_blank">How Many Markets Does Apple Dominate? The Answer Might Shock You - Yahoo Finance</a>
                 
                 <div class="section-title">📊 CONTEXT MACRO</div>
                 <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
@@ -373,7 +393,7 @@
                     <span class="badge" style="background:#787b86;">Neutru</span>
                 </div>
                 
-                <a href="https://news.google.com/rss/articles/CBMitgFBVV95cUxPTloxd3luZjNGU0x5dFR6eEpvQVFzcGVCUm9uSnhNWWtSVm1ycTJiVUFGRjV4bUJnZTlpRnNQMGE3T3VTUERpSjlJRlNZMUpEcUsyNVhmZWgwZF9ZNm9uVmdIYTRyMl9oYU5GbTdnc2w5MG0xQUcxTEFpbUExNTdvcUJaZWEzOWtmZW9IQ2F1cWYyVlN5ZkFWXzJKX2QtLW5TaUZvQjlucWNjZ0JrVG9MUDJ2VS02dw?oc=5" class="title" target="_blank">Nvidia’s Stock Is So Stuck Even Blowout Earnings May Not Lift It - Bloomberg.com</a>
+                <a href="https://news.google.com/rss/articles/CBMilwFBVV95cUxNUUlfdVNWM2VIMVlzRlJPU0VGM3hwd3JqMGNRbURhdjNRYVFkYk93RkxudnhpS1ZkUlNMOGVibHJxb191NXZNTG40VzZaQVRzTEtnc0FYbmNuWFloamRxZ0QtdVJObWNkVnJKSUNLcmk1Y1lITGVSQWNPbGFib1dBcUo4UGtrNUx2N0h4Wjg5SENILXBINFlV?oc=5" class="title" target="_blank">Nvidia stock hits this bizarre valuation level - Yahoo Finance</a>
                 
                 <div class="section-title">📊 CONTEXT MACRO</div>
                 <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
@@ -398,6 +418,7 @@
         
         </div>
         <script>
+            // --- LOGICA PENTRU DARK/LIGHT MODE ---
             function toggleTheme() {
                 const html = document.documentElement;
                 const text = document.getElementById('theme-text');
@@ -415,8 +436,39 @@
                     icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
                 }
             }
-            const saved = localStorage.getItem('pref-theme') || 'dark';
-            if (saved === 'light') toggleTheme(); 
+            const savedTheme = localStorage.getItem('pref-theme') || 'dark';
+            if (savedTheme === 'light') toggleTheme(); 
+
+            // --- LOGICA PENTRU CEASUL LIVE SI FUSUL ORAR ---
+            let currentTZ = localStorage.getItem('pref-tz') || 'local';
+            document.getElementById('tz-select').value = currentTZ;
+
+            function updateClock() {
+                const now = new Date();
+                let options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                
+                // Daca nu e pe Local, setam fusul orar specific
+                if (currentTZ !== 'local') {
+                    options.timeZone = currentTZ;
+                }
+                
+                try {
+                    const timeString = new Intl.DateTimeFormat('en-GB', options).format(now);
+                    document.getElementById('live-clock').innerText = timeString;
+                } catch(e) {
+                    document.getElementById('live-clock').innerText = '00:00:00';
+                }
+            }
+
+            function changeTimezone() {
+                currentTZ = document.getElementById('tz-select').value;
+                localStorage.setItem('pref-tz', currentTZ); // Salveaza alegerea
+                updateClock(); // Updateaza imediat
+            }
+
+            // Pornim ceasul si il actualizam la fiecare 1 secunda
+            setInterval(updateClock, 1000);
+            updateClock(); 
         </script>
     </body>
     </html>

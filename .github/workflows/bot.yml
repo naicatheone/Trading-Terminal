@@ -1,46 +1,42 @@
-name: Trading Terminal Bot
+name: Market Terminal Update
 
 on:
   schedule:
-    # 08:30 RO (06:30 UTC)
-    - cron: '30 6 * * *'
-    # 12:30 RO (10:30 UTC)
-    - cron: '30 10 * * *'
-    # 15:45 RO (13:45 UTC)
-    - cron: '45 13 * * *'
-    # 21:45 RO (19:45 UTC)
-    - cron: '45 19 * * *'
-  workflow_dispatch: # Așa se scrie corect pentru a activa butonul manual
+    # Programul in UTC (Ora RO - 2 ore)
+    - cron: '30 6 * * *'  # 08:30 RO
+    - cron: '30 10 * * *' # 12:30 RO
+    - cron: '45 13 * * *' # 15:45 RO
+    - cron: '45 19 * * *' # 21:45 RO
+  workflow_dispatch:      # Permite pornirea manuala pentru teste
 
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout codul sursă
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Instalează Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
-      - name: Instalează pachetele necesare
+      - name: Install dependencies
         run: |
           pip install feedparser beautifulsoup4 google-genai
 
-      - name: Rulează Analiza AI
+      - name: Run Trading Bot
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python app.py
+        run: python main.py
 
-      - name: Salvează noul site (Commit & Push)
+      - name: Update GitHub Pages
         run: |
-          git config --global user.name "TerminalBot"
-          git config --global user.email "bot@trading.com"
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
           git add index.html
-          git commit -m "Update automat: Raport Trading [$(date)]" || exit 0
+          git commit -m "Auto-update Market Data: $(date)" || echo "No changes to commit"
           git push

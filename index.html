@@ -1,0 +1,443 @@
+
+    <!DOCTYPE html>
+    <html lang="ro" data-theme="dark">
+    <head>
+        <meta charset="utf-8">
+        <title>Pro Trading Terminal</title>
+        <style>
+            :root[data-theme="dark"] {
+                --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --text-muted: #848e9c; 
+                --border: #2b3139; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.1);
+            }
+            :root[data-theme="light"] {
+                --bg: #f0f2f5; --card: #ffffff; --text: #4a5568; --text-bold: #1a202c; --text-muted: #718096; 
+                --border: #e2e8f0; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.05);
+            }
+            body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; transition: all 0.3s ease; }
+            
+            /* HEADER */
+            header { background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }
+            
+            /* TOGGLE BUTTON */
+            .theme-toggle-container { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+            .theme-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-bold); }
+            .theme-label { font-size: 14px; color: var(--text-bold); font-weight: 500; }
+            .toggle-pill { width: 44px; height: 24px; border-radius: 12px; background-color: #cbd5e1; position: relative; transition: 0.3s; display: flex; align-items: center; }
+            .toggle-circle { width: 18px; height: 18px; background-color: #ffffff; border-radius: 50%; position: absolute; left: 3px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+            
+            [data-theme="dark"] .toggle-pill { background-color: #3b82f6; }
+            [data-theme="dark"] .toggle-circle { background-color: #ffffff; transform: translateX(20px); }
+
+            /* GRID & CARDS */
+            .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 25px; padding: 40px; max-width: 1600px; margin: auto; }
+            .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 30px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+            .card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+            
+            /* LABELS & TITLES */
+            .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .market-tag { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+            .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+            .title { color: var(--text-bold); font-size: 18px; text-decoration: none; font-weight: 700; display: block; margin-bottom: 25px; line-height: 1.4; transition: color 0.2s; }
+            .title:hover { color: var(--accent); }
+            
+            /* SECTION STRUCTURING */
+            .section-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin: 25px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+            .text-content { font-size: 14px; line-height: 1.7; color: var(--text); margin-top: 0; }
+            
+            /* PROS / CONS BOXES */
+            .pros-cons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+            .box { padding: 15px; border-radius: 8px; font-size: 13.5px; line-height: 1.6; color: var(--text); }
+            .box strong { display: block; margin-bottom: 8px; font-size: 12px; letter-spacing: 0.5px; }
+            .pro { background: rgba(38, 166, 154, 0.05); border-left: 3px solid #26a69a; }
+            .pro strong { color: #26a69a; }
+            .con { background: rgba(239, 83, 80, 0.05); border-left: 3px solid #ef5350; }
+            .con strong { color: #ef5350; }
+            
+            /* ACTION BOX */
+            .action-box { margin-top: 25px; padding: 18px; background: var(--accent-bg); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 14.5px; font-weight: 500; color: var(--text-bold); line-height: 1.6; display: flex; gap: 12px; }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
+                <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+            </div>
+            <div style="display:flex; align-items:center; gap:30px;">
+                <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Actualizat: 24-02-2026</span>
+                <div class="theme-toggle-container" onclick="toggleTheme()">
+                    <svg id="theme-icon" class="theme-icon" viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span class="theme-label" id="theme-text">Dark theme</span>
+                    <div class="toggle-pill"><div class="toggle-circle"></div></div>
+                </div>
+            </div>
+        </header>
+        <div class="container">
+    
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Gold market</span>
+                    <span class="badge" style="background:#ef5350;">Negativ</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMikAFBVV95cUxNOGtrM29BM0VONTNtWDJINnAycjM3TTVjRm9uSHFEVlJUdjdwT0NWWVlwV3hoemZnU3dGSHJ1emxqaHRON2lCRy13OGtORzBlYXBQYTBjYjMxN20xUWg3QXRiVkJRR1dIZG1MX2NVUS1EUGt0a0doUjZnUVJSYm5aUDhTMm9nclhlN0pBekNPbEQ?oc=5" class="title" target="_blank">Gold falls over 1% as dollar strengthens, investors book profits - Reuters</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Aprecierea dolarului american reduce atractivitatea aurului pentru investitorii non-USD, deoarece devine mai scump. Concomitent, luarea de profit semnalează că investitorii anteriori își lichidează pozițiile, adăugând presiune de vânzare. Acest scenariu reflectă o reevaluare a risk-on/risk-off sau așteptări legate de politica monetară.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        - Potențial pentru o corecție tehnică pe termen scurt dacă vânzările devin excesive.
+- Rolul aurului de refugiu rămâne intact pe fondul incertitudinilor geopolitice sau economice pe termen lung, oferind suport la niveluri mai scăzute.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        - O consolidare a puterii dolarului poate exercita presiune continuă asupra prețului aurului.
+- Continuarea profit-taking-ului sau lipsa unor noi catalizatori bullish ar putea duce la testarea unor niveluri de suport inferioare.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Fii atent la nivelurile cheie de suport tehnic și la evoluția indicelui DXY pentru a anticipa potențiale inversări de trend sau continuări ale presiunii.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">WTI Oil</span>
+                    <span class="badge" style="background:#26a69a;">Pozitiv</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMihwFBVV95cUxPQ1I3a0VMSDU1ZkNRSUJOVjVUaS12WDUxQTZtNk16bVFrTWVsdk5hMUxLVDJUYndPa0VRLUpXVW9FSlIzRnBTUTFnVGMtY3psa1JSalV1OW81RjJoeGRzZmk2N0N3c2htOTkxQkNlenNkT1luSTFWRFNLS1pkd1doa25ELWt0ckU?oc=5" class="title" target="_blank">Fresh from the Trading Room: The boiling point - CME Group</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Contextul macroeconomic actual, marcat de dezechilibre persistente între cerere și ofertă, tensiuni geopolitice și politica monetară, contribuie la acest "punct de fierbere" al prețurilor petrolului. Orice eveniment major în lanțul de aprovizionare sau la nivel de cerere globală poate declanșa o mișcare amplă.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        - Tensiunile geopolitice continue pot adăuga o primă de risc semnificativă, susținând prețurile.
+    - Redresarea robustă a cererii la nivel global, combinată cu o ofertă inelastică, susține presiunea ascendentă.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        - Riscul unei recesiuni globale ar putea eroda brusc cererea, inversând trendul ascendent.
+    - Intervențiile guvernamentale sau deciziile neașteptate ale OPEC+ pot introduce volatilitate descendentă.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Monitorizăm cu atenție nivelurile cheie de rezistență și suport, alături de evoluțiile geopolitice și datele săptămânale privind stocurile, pentru a identifica o direcție clară.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">EURUSD</span>
+                    <span class="badge" style="background:#787b86;">Neutru</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMingFBVV95cUxNVl9TeFpNRnVOTXFkbDJuVjNHcl9aazhMd2dPc1RqbmVxQXJaUTU0STFOcVhpdVE5UEtOZXVZal9LVHBacEJNSWFZZVgwNEZtN1hjOUE5RzJ0aEJpQ3dWY0pIdUtyOExKUUNjZURnSW1kOTZja3Fyc2VEempOVEpTWGJ3WE1DMXZJQnpfTnRob19yNVl6c2NUbXBzLXZpQdIBqgFBVV95cUxQZGJ0YkFySVJwVEhUVkR2YWhxRGd0SDZFS0dhMmcxRG5SWU9FWWlKR0xnSHlyRFgwWDJUQ2RHMTRqYmd0Ql9RSWkyRUQxeVROSmVmYUxrNTJJS2NETUdFZW94LXhBTThLVUo5TjNLM1poVUtzcWtVXzNwRUc1Szl4THB0dE0tZXVXdkdUVzg4VEVuMlBETHFDMUpta3VEM2NUT3E0REtoS3JEUQ?oc=5" class="title" target="_blank">US Dollar Price Action Setups: EUR/USD, USD/JPY, Gold - FOREX.com</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Contextul macroeconomic actual pentru Dolarul American este definit de anticipările privind politica monetară a Fed, inflație și sentimentul de risc global. Aceste elemente influențează diferențialele de randament și fluxurile de capital, creând premise pentru volatilitate pe perechile majore. Analiza price action devine esențială în identificarea zonelor de interes.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        - Identificarea unor niveluri tehnice clare de suport și rezistență, oferind oportunități de intrare și ieșire.
+- Potențial de a capitaliza pe mișcări direcționale puternice odată ce se confirmă spargerea sau respingerea unor praguri cheie.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        - Risc de breakout-uri false sau consolidare prelungită în jurul nivelurilor critice, putând genera pierderi rapide.
+- Evenimentele macroeconomice neprevăzute pot invalida rapid setup-urile tehnice, necesitând ajustări rapide ale pozițiilor.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Urmăriți cu atenție confirmarea spargerilor sau respingerilor la nivelurile cheie de suport și rezistență pe EUR/USD, USD/JPY și Aur, integrând volumul și momentumul pentru validare.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">GBPUSD</span>
+                    <span class="badge" style="background:#26a69a;">Pozitiv</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMipAFBVV95cUxQbEtPVG90ZjFvM0poT19iaUZZNFBUZEVEdlRQOTZCZEFfSEdEVTFtaGd3S09pdGdubDlzcDgzN01ESWt2REhTX1p4ZWRXNTBXYnIydXlRMHRtVml0Vlh5STlKVHFaMkF5M0dEWDc5Qm9waHVSSWo2akJtWndwOWxlZGFaMmdVNjdPUTdDMlBHbG80WC1Gejc5c0dwV3gxel9ocVlDNtIBsAFBVV95cUxNakd0SGpucS1mOUNKb1RSZVpDQ2ZuZGh4MElzUzhPR3drZndhY1NnWm5WSTRDbjF0R0haVEcwMFB4UHhndFVnenRNU21aZnlsT0dqUXkzbXVHby16aWZrenRkSmhoU25OMGR5M2tGUktVVEVlZ0N1eHowR0tIcFQ3SXRXeFVjWXV6WlhnWWtfNVBoeGQzWWJ6dHhxMnpUMHV0X2VOc0tfVGxFVmMwYXpqSQ?oc=5" class="title" target="_blank">British Pound Outlook: GBP/USD Falling Wedge 2.0 in 2026 - FOREX.com</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Patternul tehnic de "falling wedge" este o formațiune de preț care semnalează, de regulă, o inversare bullish după o perioadă de consolidare descendentă, indicând o epuizare a presiunii de vânzare. Perspectiva pe termen lung (2026) implică faptul că analiștii anticipează o schimbare structurală în dinamica fundamentală sau monetară care va susține aprecierea lirei sterline față de dolarul american.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        -   Potențial semnificativ de apreciere a GBP/USD pe termen lung, oferind o bază pentru poziții strategice de cumpărare.
+-   Indicator tehnic ce sugerează o acumulare graduală de presiune de cumpărare, anticipând un breakout ascendent.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        -   Orizontul de timp (2026) este extins, iar numeroși factori macroeconomici imprevizibili pot invalida proiecția tehnică.
+-   Confirmarea patternului necesită un volum crescut și o ruptură decisivă a rezistenței superioare a wedge-ului, elemente ce lipsesc în prezent.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Urmărim cu atenție acțiunea prețului și datele macroeconomice cheie din UK și SUA pentru a identifica semnale de confirmare ale patternului și niveluri optime de intrare.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">USDJPY</span>
+                    <span class="badge" style="background:#26a69a;">Pozitiv</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMipAFBVV95cUxQTHlyZTVPaXpLV1NXV3BoRVFxM295RkxDaUx1bFRaTWx2cWxoQmFkQkc4d2FMX0o4TXBiSUtaRzA0MTFxZ3lIZXphcElEQkVsTUpBUFJNRUd4OVlma1NwLU1USEdJVjB5VTlzSjdVUmlBWWFVdFcxSnNUUVhScENDYWR6QjhKTEtycEVUS3FpOW9qRHlOdjlTQ3VXbzhyOFdheFRzdg?oc=5" class="title" target="_blank">USD/JPY in the Black as Investors Eye Geopolitical Flare-Up - Investing.com</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Contextul geopolitic tensionat amplifică incertitudinea globală, determinând investitorii să caute refugiu în active considerate mai sigure. În acest scenariu, dolarul american își reconfirmă rolul de monedă de rezervă și de refugiu. Yenul japonez, deși tradițional un safe-haven, este subminat de diferențialele de dobândă și de percepția asupra riscurilor regionale.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                           Statutul de "ultimate safe-haven" al USD atrage fluxuri de capital în perioade de risc global.
+   Diferențialul semnificativ de dobândă dintre SUA și Japonia continuă să ofere suport puternic pentru perechea USD/JPY.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                           O escaladare majoră a conflictelor ar putea declanșa o adevărată aversiune la risc, amplificând volatilitatea și potențial un raliu al JPY ca refugiu.
+   Riscul de intervenție valutară din partea autorităților japoneze pentru a susține yenul rămâne o amenințare constantă.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Monitorizăm cu atenție evoluțiile geopolitice și nivelul tehnic de rezistență la 152.00 pentru confirmarea sustenabilității trendului ascendent.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Bitcoin</span>
+                    <span class="badge" style="background:#ef5350;">Negativ</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxNSEhHVEQ4MzdIZF9iNTBZQ2d2OS01bHdlVkNNeDByZjB4eGxjU2RQM29hVW5OX2t3YmtUQW1hdllPaVppOEJVekVMU3lVdjhTODN6NzE2cC1qeUdaNHpVSVZQQlVZampCVlo5M3d3OFlaOFVGODhDTmI4NXBsYmItNkNmX0xrVDBBUkdTWTZXWjkxY3M4Xzk0ZTFrT0ZRZ0ZpWjNSMW5EY3FMcG1N0gGyAUFVX3lxTE5XeXB1YnBSaTF0ZTFIYmJjek9ZUUJua2oxTUlCZWNOSTJrZmJqdFdfNDliVkxUb3J0cWFwc3dCY2N6dl9IREJvVWhBZU1UM3NwdFpTbWROWG1TR2NKS1ZjTjZNMlJQVktZcmJRYTNTVjVKREN6U2VITTF2TVVzTTcxdktmbGNNUGN3SlR0cDlOWnhSbHhxLTRXcEROaUdGUWlIM1g4aHpKT2xBNmNfSE9IYUE?oc=5" class="title" target="_blank">Bitcoin extends decline, falling below $63,000 before paring some losses - CNBC</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Declinul extins al Bitcoin reflectă presiuni macroeconomice generale și o perioadă de consolidare sau profit-taking după rally-ul anterior. Piața se confruntă cu ieșiri din ETF-uri spot și o reticență crescută la risc, indicând o posibilă capitulare înainte de o potențială inversare. Este un semnal că se apropie un potențial "bottom" al prețului.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        - Prețul se apropie de un nivel tehnic de suport critic, sugerând un potențial "bottom" pe termen scurt.
+- O recuperare parțială după minimul atins indică prezența cumpărătorilor la niveluri scăzute.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        - Cea mai slabă lună din iunie 2022 semnalează o presiune puternică de vânzare și o lichidare semnificativă.
+- Incertitudinea macroeconomică continuă și fluxurile negative din ETF-uri pot prelungi perioada de consolidare sau scădere.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Monitorizați cu atenție nivelul de suport de la $60,000 - $61,000; răbdarea este esențială înainte de o inversare confirmată.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">S&P 500</span>
+                    <span class="badge" style="background:#787b86;">Neutru</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMi7gFBVV95cUxNZV9Ja0xQTE1qMk5LQkRjLVlWc0poQXowTWVqUHdyWXgwZTJCSlROVmIxTXR3WWpVeU9iaEd6Rl9DM3E3djJfekNJQXhCUy0yd2hOWVhnc0NsRy12ckFvaUtGUXoxY0ZVVDNpTHR2bS02YmVDR3JnNy1LMzdnZ1FxdV95MDdZeThGOHJSQ0RZd3U0WVRzUjdQYUhEOGNidVdHbDBUaHdTRHNGUURjZHZzMGgtVXVpTnZvNDhfbTcxWUhoOE5pSkFfM1M0V0YwY0dvTEhhNUxmalJlNU5TWVY5LWNmakRucTYycUlPQmd3?oc=5" class="title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq futures tick up after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Piețele bursiere încearcă o revenire după o corecție recentă și cea mai slabă zi a lunii, în contextul în care futures tick-up. Această tentativă de recuperare este însă temperată de implementarea noilor tarife Trump, care aduc incertitudine economică, și de îngrijorările persistente legate de piața creditului privat, semnalând riscuri sistemice. Climatul general rămâne volatil, marcat de o luptă între interesul de a cumpăra după dip și presiunile macroeconomice.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        -   Futures tick up, indicând o potențială oportunitate de "buy the dip" după corecția accelerată de sectorul AI.
+-   Capacitatea pieței de a absorbi știri negative pe termen scurt, căutând puncte de suport.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        -   Noile tarife globale impuse de Trump aduc un risc semnificativ de escaladare a războaielor comerciale și pot afecta lanțurile de aprovizionare și profitabilitatea corporațiilor.
+-   Îngrijorările privind creditul privat semnalează vulnerabilități potențiale în sistemul financiar, cu risc de contagiune.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Monitorizați cu atenție evoluția politicilor comerciale și rapoartele privind stabilitatea pieței creditului privat pentru a evalua sustenabilitatea oricărui rebound și a identifica nivelurile cheie de suport.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Nasdaq 100</span>
+                    <span class="badge" style="background:#787b86;">Neutru</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMi5gFBVV95cUxOX2JzaEFacWNfWm1mcXQ1a01FTjYzbllUdHZSb2R6cnA0eDEwTjV5cDQ1VDBOM090WHpEY0tpa3FRb19Gd2xJbXRqQ2MweVRJbHM4QmNPR0ZRX21qMmpJWXdfSkRxOFZLaG1FOTNHemY1NUxzaUl6cnZ3VlFCMnBERDNOYTNTRGtwUF9UWWxTRThLWDFYUFdKSEpzbXpYMkxjemUtSHNod3hKaXU0amZ0TVhHdmZJOFg2WlFpcnVMZkZrM2NFTkREaDI3Vl9NRDdEM0RzdmVGVDJ2WlN1QzA2N2lTQlA4Zw?oc=5" class="title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq futures tick up after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance UK</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Piața se află într-o fază de evaluare post-corecție în sectorul tech, încercând o stabilizare. Contextul macroeconomic este complicat de reintroducerea unor politici tarifare care pot genera incertitudine în comerțul global și pot afecta profitabilitatea corporativă.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        -   Semnale de reziliență după un sell-off, indicând posibile oportunități de "buy the dip" în sectoarele afectate.
+-   Interesul fundamental pentru AI rămâne puternic, putând susține o revenire pe termen mediu.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        -   Noile tarife Trump introduc riscuri geopolitice și economice, putând afecta lanțurile de aprovizionare și marjele companiilor.
+-   Volatilitatea recentă în sectorul tech (AI-fueled sell-off) sugerează o sensibilitate crescută la știri și profit-taking.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Urmăriți cu atenție evoluția politicii comerciale și reacția sectorului tehnologic la nivelurile cheie de suport, căutând semne de consolidare sau de inversare a tendinței.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Apple stock</span>
+                    <span class="badge" style="background:#ef5350;">Negativ</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxNak5XaXhPbXJzc0tOQWFwSlJHSzkyaTJkVlBfc3QtdW40UDlpd0EtLUw2bHBEOXg0S1pPdmh6Q1BzNzFscVdINFJlSGpGY3hMQWl3NFQxU0l6enBGbGpvUUM4TXJ1M2FPSWIxdGhsbnBSeWtMa0tiZ2xhTFhMeWRxTnB1dzQ?oc=5" class="title" target="_blank">Apple’s Stock Recovery Is No Recovery At All - Yahoo Finance</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Această analiză pune sub semnul întrebării reziliența unei companii de top precum Apple, indicând posibile vulnerabilități în contextul economic actual sau o supraevaluare a acțiunilor. Implicațiile se pot extinde la sectorul tech, sugerând că optimismul pieței ar putea fi nejustificat în absența unor catalizatori de creștere clari.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                        - Fidelitatea puternică a brandului și ecosistemul robust asigură o bază stabilă de venituri recurente.
+- Capacitatea de inovare pe termen lung, inclusiv în noi segmente (ex. AI, AR/VR), rămâne un factor de creștere potențial.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                        - Lipsa unor catalizatori majori de creștere pe termen scurt care să justifice evaluarea curentă.
+- Există riscul unei corecții a prețului, dat fiind că raliul actual ar putea fi perceput ca nesustenabil, bazat pe speculații.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Recomandăm o abordare precaută, monitorizând cu atenție datele fundamentale și semnalele privind fluxurile de capital înainte de a iniția poziții semnificative.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Tesla stock</span>
+                    <span class="badge" style="background:#ef5350;">Negativ</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMingFBVV95cUxPaHp2X1d0eTdDdS03ZEV2WlBnYXliYWdlaDhtZWd1Z3luTUFPOFcwS25oODNfaEVYOGlWeXE2VHpXUFlaanplbUxUY05vUFMwbUhtMGx1QU1jbzlRX0tWanNyNTROd1g0bGJmbWdGUzBZamh6UVY3MEhhdl9HVEhaaWpRYXUyc2Q3WEt0MTlGSkhhN0cwS0xMVWJLQWM4UQ?oc=5" class="title" target="_blank">Uber's CEO Just Delivered Disappointing News for Tesla Stock Investors - Nasdaq</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Comentariile CEO-ului Uber indică o prudență sau o reevaluare a strategiei privind implementarea vehiculelor autonome și electrice la scară largă în serviciile de ride-sharing. Acest lucru este crucial pentru Tesla, a cărei evaluare depinde în mare măsură de potențialul FSD și de adoptarea masivă în flote. Impactul se resimte în sentimentul pieței privind capacitatea Tesla de a-și monetiza pe deplin viziunea pe termen lung și de a extinde penetrarea pe piața comercială.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                           - Liderul tehnologic al Tesla în domeniul vehiculelor electrice și inovația continuă pot atenua impactul pe termen lung.
+   - Diversificarea afacerii Tesla în energie și stocare oferă o bază de venituri mai stabilă, independentă de sectorul ride-sharing.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                           - Creșterea incertitudinii privind calendarul și rentabilitatea implementării FSD și a rețelelor de robotaxi.
+   - Potențiale obstacole în integrarea vehiculelor Tesla în flotele marilor operatori de mobilitate, un segment cheie de creștere anticipat.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Monitorizați reacția pieței și căutați clarificări suplimentare privind strategia Tesla de dezvoltare și parteneriate în sectorul autonom și fleet, acordând atenție nivelurilor de suport tehnic cheie.</div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header">
+                    <span class="market-tag">Nvidia stock</span>
+                    <span class="badge" style="background:#787b86;">Neutru</span>
+                </div>
+                
+                <a href="https://news.google.com/rss/articles/CBMitgFBVV95cUxPTloxd3luZjNGU0x5dFR6eEpvQVFzcGVCUm9uSnhNWWtSVm1ycTJiVUFGRjV4bUJnZTlpRnNQMGE3T3VTUERpSjlJRlNZMUpEcUsyNVhmZWgwZF9ZNm9uVmdIYTRyMl9oYU5GbTdnc2w5MG0xQUcxTEFpbUExNTdvcUJaZWEzOWtmZW9IQ2F1cWYyVlN5ZkFWXzJKX2QtLW5TaUZvQjlucWNjZ0JrVG9MUDJ2VS02dw?oc=5" class="title" target="_blank">Nvidia’s Stock Is So Stuck Even Blowout Earnings May Not Lift It - Bloomberg.com</a>
+                
+                <div class="section-title">📊 CONTEXT MACRO</div>
+                <p class="text-content">Piața anticipează rezultate trimestriale foarte puternice pentru Nvidia, alimentate de cererea continuă pentru cipuri AI. Cu toate acestea, există îngrijorări că aceste așteptări ar putea fi deja pe deplin încorporate în prețul curent al acțiunii, limitând potențialul de creștere post-earnings. Recent, acțiunea a înregistrat o ușoară corecție, adăugând complexitate evaluării.</p>
+                
+                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                <div class="pros-cons-grid">
+                    <div class="box pro">
+                        <strong>BULLISH FACTORS</strong>
+                           Dominanța incontestabilă pe piața cipurilor AI, cu cerere robustă și perspective de creștere pe termen lung.
+   Consensul general bullish al Wall Street-ului sugerează o încredere puternică în fundamentalele companiei.
+                    </div>
+                    <div class="box con">
+                        <strong>BEARISH RISKS</strong>
+                           Așteptările extrem de ridicate riscă să limiteze orice mișcare ascendentă post-earnings, chiar și în cazul unor rezultate excepționale ("buy the rumor, sell the news").
+   Preocupările privind o potențială evaluare extinsă și concurența (ex: AMD/Meta deal) pot exercita presiune asupra acțiunii.
+                    </div>
+                </div>
+                
+                <div class="action-box">
+                    <span style="font-size: 18px;">🎯</span> 
+                    <div>Adoptăm o poziție de prudență strategică, concentrându-ne pe reacția pieței imediat după publicarea earnings-urilor, cu atenție la nivelurile de suport/rezistență cheie.</div>
+                </div>
+            </div>
+        
+        </div>
+        <script>
+            function toggleTheme() {
+                const html = document.documentElement;
+                const text = document.getElementById('theme-text');
+                const icon = document.getElementById('theme-icon');
+                
+                if (html.getAttribute('data-theme') === 'dark') {
+                    html.setAttribute('data-theme', 'light');
+                    localStorage.setItem('pref-theme', 'light');
+                    text.innerText = 'Light theme';
+                    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                } else {
+                    html.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('pref-theme', 'dark');
+                    text.innerText = 'Dark theme';
+                    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                }
+            }
+            const saved = localStorage.getItem('pref-theme') || 'dark';
+            if (saved === 'light') toggleTheme(); 
+        </script>
+    </body>
+    </html>
+    

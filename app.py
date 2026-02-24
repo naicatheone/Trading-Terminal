@@ -1,9 +1,9 @@
+import os
 import feedparser
 from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import quote
 import smtplib
-import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
@@ -123,9 +123,14 @@ def generate_web_html(articles):
             }}
             body {{ background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; transition: all 0.3s ease; }}
             
-            /* HEADER */
+            /* HEADER & CLOCK */
             header {{ background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }}
             
+            .clock-widget {{ display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; gap: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); margin-left: 20px; }}
+            .clock-time {{ font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--text-bold); letter-spacing: 1px; min-width: 80px; text-align: center; }}
+            .clock-select {{ background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }}
+            .clock-select option {{ background: var(--card); color: var(--text-bold); }}
+
             /* TOGGLE BUTTON */
             .theme-toggle-container {{ display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }}
             .theme-icon {{ width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-bold); }}
@@ -167,9 +172,24 @@ def generate_web_html(articles):
     </head>
     <body>
         <header>
-            <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
-                <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+            <div style="display:flex; align-items:center;">
+                <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
+                    <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+                </div>
+                
+                <div class="clock-widget">
+                    <span id="live-clock" class="clock-time">00:00:00</span>
+                    <select id="tz-select" class="clock-select" onchange="changeTimezone()">
+                        <option value="local">Local Time</option>
+                        <option value="America/New_York">New York (EST)</option>
+                        <option value="Europe/London">London (GMT)</option>
+                        <option value="Asia/Tokyo">Tokyo (JST)</option>
+                        <option value="Australia/Sydney">Sydney (AEST)</option>
+                        <option value="UTC">UTC</option>
+                    </select>
+                </div>
             </div>
+
             <div style="display:flex; align-items:center; gap:30px;">
                 <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Actualizat: {date_str}</span>
                 <div class="theme-toggle-container" onclick="toggleTheme()">
@@ -186,7 +206,6 @@ def generate_web_html(articles):
     for art in articles:
         badge_color = "#26a69a" if "Pozitiv" in art['sentiment'] else ("#ef5350" if "Negativ" in art['sentiment'] else "#787b86")
         
-        # Curățăm formatarea cu asteriscuri lăsată uneori de AI pentru a păstra aspectul curat
         puncte_forte_curat = art['puncte_forte'].replace('*', '')
         puncte_slabe_curat = art['puncte_slabe'].replace('*', '')
 
@@ -223,6 +242,7 @@ def generate_web_html(articles):
     html += """
         </div>
         <script>
+            // --- LOGICA PENTRU DARK/LIGHT MODE ---
             function toggleTheme() {
                 const html = document.documentElement;
                 const text = document.getElementById('theme-text');
@@ -240,8 +260,39 @@ def generate_web_html(articles):
                     icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
                 }
             }
-            const saved = localStorage.getItem('pref-theme') || 'dark';
-            if (saved === 'light') toggleTheme(); 
+            const savedTheme = localStorage.getItem('pref-theme') || 'dark';
+            if (savedTheme === 'light') toggleTheme(); 
+
+            // --- LOGICA PENTRU CEASUL LIVE SI FUSUL ORAR ---
+            let currentTZ = localStorage.getItem('pref-tz') || 'local';
+            document.getElementById('tz-select').value = currentTZ;
+
+            function updateClock() {
+                const now = new Date();
+                let options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                
+                // Daca nu e pe Local, setam fusul orar specific
+                if (currentTZ !== 'local') {
+                    options.timeZone = currentTZ;
+                }
+                
+                try {
+                    const timeString = new Intl.DateTimeFormat('en-GB', options).format(now);
+                    document.getElementById('live-clock').innerText = timeString;
+                } catch(e) {
+                    document.getElementById('live-clock').innerText = '00:00:00';
+                }
+            }
+
+            function changeTimezone() {
+                currentTZ = document.getElementById('tz-select').value;
+                localStorage.setItem('pref-tz', currentTZ); // Salveaza alegerea
+                updateClock(); // Updateaza imediat
+            }
+
+            // Pornim ceasul si il actualizam la fiecare 1 secunda
+            setInterval(updateClock, 1000);
+            updateClock(); 
         </script>
     </body>
     </html>
@@ -286,4 +337,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

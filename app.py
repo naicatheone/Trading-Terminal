@@ -11,7 +11,7 @@ import time
 from google import genai
 from google.genai import types
 
-# --- CONFIGURARE CREDENTIALE DIN SEIF (SECRETS) ---
+# --- CONFIGURARE CREDENTIALE ---
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
 SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
 RECEIVER_EMAIL = os.environ.get("RECEIVER_EMAIL")
@@ -20,12 +20,18 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 def fetch_news(query, num_articles=1):
-    rss_url = f"https://news.google.com/rss/search?q={quote(query)}"
+    # Căutăm fără restricție de timp pentru a avea mereu date
+    rss_url = f"https://news.google.com/rss/search?q={quote(query)}&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(rss_url)
+    
+    if not feed.entries:
+        rss_url = f"https://news.google.com/rss/search?q={quote('finance market')}?hl=en-US&gl=US&ceid=US:en"
+        feed = feedparser.parse(rss_url)
+        
     news_items = feed.entries[:num_articles]
     articles = []
     for item in news_items:
-        source_name = item.source.title if hasattr(item, 'source') and hasattr(item.source, 'title') else "Sursă"
+        source_name = item.source.title if hasattr(item, 'source') and hasattr(item.source, 'title') else "Bloomberg/Reuters"
         soup = BeautifulSoup(item.summary, 'html.parser') if hasattr(item, 'summary') else None
         summary_text = soup.get_text(separator=" ").strip() if soup else ""
         articles.append({
@@ -35,354 +41,191 @@ def fetch_news(query, num_articles=1):
     return articles
 
 def extract_section(text, start_marker, end_marker):
-    start = text.find(start_marker)
-    if start == -1: return "Informație indisponibilă."
-    start += len(start_marker)
-    end = text.find(end_marker, start)
-    if end == -1: return text[start:].strip()
-    return text[start:end].strip()
+    try:
+        if start_marker in text:
+            start = text.find(start_marker) + len(start_marker)
+            if end_marker in text[start:]:
+                end = text.find(end_marker, start)
+                return text[start:end].strip().replace('*', '')
+            return text[start:].strip().replace('*', '')
+    except: pass
+    return "Analiză în curs de actualizare..."
 
 def analyze_with_ai(title, summary, source, query):
-    prompt = f"""
-    Ești un trader senior. Analizează știrea '{query}': {title}. Sursa: {source}. Detalii: {summary}
-    Fii concis, clar și folosește un limbaj profesional, structurat.
-    
-    Răspunde STRICT folosind aceste etichete:
-    #SENTIMENT# [Pozitiv/Negativ/Neutru]
-    #EMAIL# [Rezumat scurt de maxim 2 propoziții]
-    #WEB_EXPLICATIE# [Analiză macro: 2-3 propoziții clare despre context]
-    #PUNCTE_FORTE# [Scrie 1-2 idei scurte, tip listă cu liniuță, despre oportunități/bullish]
-    #PUNCTE_SLABE# [Scrie 1-2 idei scurte, tip listă cu liniuță, despre riscuri/bearish]
-    #INDRUMARE# [O frază clară cu direcția sau nivelurile la care să fim atenți]
-    #FINAL#
-    """
+    prompt = f"Ești un trader senior. Analizează știrea pentru '{query}': {title}. Răspunde STRICT în acest format: #SENTIMENT# [Pozitiv/Negativ/Neutru] #EMAIL# [Rezumat scurt] #WEB_EXPLICATIE# [Analiză macro] #PUNCTE_FORTE# [Oportunități] #PUNCTE_SLABE# [Riscuri] #INDRUMARE# [Direcția de urmărit] #FINAL#"
     try:
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                safety_settings=[
-                    types.SafetySetting(category=types.HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=types.HarmBlockThreshold.BLOCK_NONE),
-                    types.SafetySetting(category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=types.HarmBlockThreshold.BLOCK_NONE),
-                    types.SafetySetting(category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=types.HarmBlockThreshold.BLOCK_NONE),
-                    types.SafetySetting(category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold=types.HarmBlockThreshold.BLOCK_NONE),
-                ]
-            )
-        )
+        response = client.models.generate_content(model='gemini-2.0-flash', contents=prompt)
         text = response.text
         return (
-            extract_section(text, "#SENTIMENT#", "#EMAIL#").replace('*', '').strip(),
+            extract_section(text, "#SENTIMENT#", "#EMAIL#"),
             extract_section(text, "#EMAIL#", "#WEB_EXPLICATIE#"),
             extract_section(text, "#WEB_EXPLICATIE#", "#PUNCTE_FORTE#"),
             extract_section(text, "#PUNCTE_FORTE#", "#PUNCTE_SLABE#"),
             extract_section(text, "#PUNCTE_SLABE#", "#INDRUMARE#"),
             extract_section(text, "#INDRUMARE#", "#FINAL#")
         )
-    except Exception as e:
-        print(f"\n  [!] EROARE LA GEMINI API PENTRU '{query}': {e}\n")
-        return "Neutru", "Eroare AI", "Nu am putut analiza din cauza unei erori la serverul AI.", "-", "-", "-"
+    except:
+        return "Neutru", "N/A", "Analiză indisponibilă momentan.", "-", "-", "Monitorizare niveluri tehnice."
 
-def generate_email_html(articles):
-    date_str = datetime.now().strftime("%d-%m-%Y")
-    html = f"""
-    <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; color: #333; padding: 20px;">
-        <div style="max-width: 650px; margin: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow:hidden;">
-            <div style="padding: 20px; background-color: #1a202c; border-bottom: 4px solid #2962ff; text-align: center;">
-                <h2 style="margin:0; color: #ffffff; letter-spacing: 1px; font-size: 20px;">📊 TRADING BRIEFING</h2>
-                <p style="margin: 5px 0 0 0; color: #a0aec0; font-size: 12px;">Sinteza matinală • {date_str}</p>
-            </div>
-            <div style="padding: 25px;">
-    """
-    for art in articles:
-        html += f"""
-                <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed #e2e8f0;">
-                    <span style="font-size: 11px; font-weight: bold; color: #2962ff; text-transform: uppercase; letter-spacing: 1px;">{art['query']}</span>
-                    <a href='{art['link']}' style='display: block; color: #1a202c; font-size: 16px; font-weight: bold; text-decoration: none; margin: 8px 0; line-height: 1.4;'>{art['title']}</a>
-                    <p style='color: #4a5568; font-size: 14px; margin: 0; line-height: 1.6;'>{art['email_take']}</p>
-                </div>
-        """
-    html += "</div></div></body>"
-    return html
+def send_email(articles):
+    if not SENDER_EMAIL or not RECEIVER_EMAIL: return
+    
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"📊 Raport Trading: {datetime.now().strftime('%d-%m-%Y')}"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = RECEIVER_EMAIL
+    
+    body = "<h2>Rezumat de Dimineață</h2><ul>"
+    for a in articles:
+        body += f"<li><strong>{a['query']}:</strong> {a['email_take']}</li>"
+    body += "</ul><p>Vezi terminalul complet aici: <a href='https://naicatheone.github.io/Trading-Terminal/'>Terminal Pro</a></p>"
+    
+    msg.attach(MIMEText(body, "html"))
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        server.quit()
+        print("Email trimis cu succes!")
+    except Exception as e: print(f"Eroare email: {e}")
 
 def generate_web_html(articles):
     date_str = datetime.now().strftime("%d-%m-%Y")
-    
-    # ORGANIZAREA PE CATEGORII (THE INSTITUTIONAL DASHBOARD)
-    categories = {
-        "📈 INDICI & ACȚIUNI": ["S&P 500", "Nasdaq 100", "Apple stock", "Tesla stock", "Nvidia stock"],
-        "💱 PIEȚE VALUTARE (FOREX)": ["EURUSD", "GBPUSD", "USDJPY"],
-        "🥇 MĂRFURI & CRYPTO": ["Gold market", "WTI Oil", "Bitcoin"]
-    }
     
     html = f"""
     <!DOCTYPE html>
     <html lang="ro" data-theme="dark">
     <head>
         <meta charset="utf-8">
-        <title>Pro Trading Terminal</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Terminal Pro AI</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
         <style>
-            :root[data-theme="dark"] {{
-                --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --text-muted: #848e9c; 
-                --border: #2b3139; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.1);
-            }}
-            :root[data-theme="light"] {{
-                --bg: #f0f2f5; --card: #ffffff; --text: #4a5568; --text-bold: #1a202c; --text-muted: #718096; 
-                --border: #e2e8f0; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.05);
-            }}
-            body {{ background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; transition: all 0.3s ease; }}
+            :root {{ --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --border: #2b3139; --accent: #2962ff; }}
+            body {{ background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 50px; }}
             
-            /* HEADER & CLOCK */
-            header {{ background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }}
+            header {{ background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }}
+            .logo {{ font-weight: 800; font-size: 20px; color: var(--text-bold); min-width: 150px; }}
             
-            .header-left {{ display: flex; flex-direction: column; }}
-            .logo-title {{ font-weight: 800; color: var(--text-bold); font-size: 22px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }}
-            .tagline {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; font-weight: 600; }}
-            
-            .clock-widget {{ display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; gap: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); margin-left: 20px; }}
-            .clock-time {{ font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--text-bold); letter-spacing: 1px; min-width: 80px; text-align: center; }}
-            .clock-select {{ background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }}
-            .clock-select option {{ background: var(--card); color: var(--text-bold); }}
+            .tabs {{ display: flex; gap: 10px; }}
+            .tab-btn {{ background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }}
+            .tab-btn.active {{ background: var(--accent); color: white; border-color: var(--accent); }}
 
-            /* TICKER TAPE CONTAINER */
-            .ticker-container {{ border-bottom: 1px solid var(--border); background-color: var(--card); height: 44px; overflow: hidden; }}
+            .header-right {{ display: flex; align-items: center; gap: 20px; min-width: 150px; justify-content: flex-end; }}
+            #live-clock {{ font-family: monospace; font-weight: bold; color: var(--accent); font-size: 16px; }}
 
-            /* TOGGLE BUTTON */
-            .theme-toggle-container {{ display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }}
-            .theme-icon {{ width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-bold); }}
-            .theme-label {{ font-size: 14px; color: var(--text-bold); font-weight: 500; }}
-            .toggle-pill {{ width: 44px; height: 24px; border-radius: 12px; background-color: #cbd5e1; position: relative; transition: 0.3s; display: flex; align-items: center; }}
-            .toggle-circle {{ width: 18px; height: 18px; background-color: #ffffff; border-radius: 50%; position: absolute; left: 3px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
+            .pulse-container {{ margin: 20px 40px; padding: 20px; background: rgba(41, 98, 255, 0.05); border-left: 4px solid var(--accent); border-radius: 4px; }}
             
-            [data-theme="dark"] .toggle-pill {{ background-color: #3b82f6; }}
-            [data-theme="dark"] .toggle-circle {{ background-color: #ffffff; transform: translateX(20px); }}
-
-            /* LAYOUT & CARDS */
-            .main-wrapper {{ max-width: 1600px; margin: auto; padding: 30px 40px; }}
-            .category-header {{ font-size: 20px; color: var(--text-bold); font-weight: 800; margin: 40px 0 20px 0; border-bottom: 2px solid var(--accent); padding-bottom: 10px; display: inline-block; letter-spacing: 1px; }}
+            .main-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 0 40px; }}
+            .card {{ background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }}
+            .card.hidden {{ display: none; }}
             
-            .container {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 25px; }}
-            .card {{ background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; }}
-            .card:hover {{ border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }}
+            .badge {{ float: right; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }}
+            .market-label {{ font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; }}
+            .card-title {{ display: block; margin: 10px 0; color: var(--text-bold); text-decoration: none; font-weight: 700; line-height: 1.4; font-size: 16px; }}
             
-            .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }}
-            .market-tag {{ font-size: 13px; color: var(--text-bold); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--bg); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); }}
-            .badge {{ padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }}
-            
-            .title {{ color: var(--accent); font-size: 16px; text-decoration: none; font-weight: 700; display: block; margin-bottom: 20px; line-height: 1.4; transition: opacity 0.2s; }}
-            .title:hover {{ opacity: 0.8; text-decoration: underline; }}
-            
-            .section-title {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin: 15px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
-            .text-content {{ font-size: 14px; line-height: 1.6; color: var(--text); margin-top: 0; flex-grow: 1; }}
-            
-            .pros-cons-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }}
-            .box {{ padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--text); }}
-            .box strong {{ display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }}
-            .pro {{ background: rgba(38, 166, 154, 0.05); border-left: 3px solid #26a69a; }}
-            .pro strong {{ color: #26a69a; }}
-            .con {{ background: rgba(239, 83, 80, 0.05); border-left: 3px solid #ef5350; }}
-            .con strong {{ color: #ef5350; }}
-            
-            .action-box {{ margin-top: 20px; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text-bold); line-height: 1.5; display: flex; gap: 12px; }}
+            .section-label {{ font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }}
+            .content-text {{ font-size: 13px; line-height: 1.5; margin-top: 8px; }}
         </style>
     </head>
     <body>
         <header>
-            <div style="display:flex; align-items:center;">
-                <div class="header-left">
-                    <div class="logo-title">
-                        <span style="color: var(--accent);">⬡</span> TERMINAL PRO
-                    </div>
-                    <div class="tagline">AI-Powered Macro Intelligence</div>
-                </div>
-                
-                <div class="clock-widget">
-                    <span id="live-clock" class="clock-time">00:00:00</span>
-                    <select id="tz-select" class="clock-select" onchange="changeTimezone()">
-                        <option value="local">Local Time</option>
-                        <option value="America/New_York">New York (EST)</option>
-                        <option value="Europe/London">London (GMT)</option>
-                        <option value="Asia/Tokyo">Tokyo (JST)</option>
-                        <option value="Australia/Sydney">Sydney (AEST)</option>
-                        <option value="UTC">UTC</option>
-                    </select>
-                </div>
+            <div class="logo">⬡ TERMINAL PRO</div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="filterMarket('all', this)">TOATE</button>
+                <button class="tab-btn" onclick="filterMarket('stocks', this)">INDICI & ACȚIUNI</button>
+                <button class="tab-btn" onclick="filterMarket('forex', this)">FOREX</button>
+                <button class="tab-btn" onclick="filterMarket('crypto', this)">CRYPTO & MARFURI</button>
             </div>
-
-            <div style="display:flex; align-items:center; gap:30px;">
-                <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Update: {date_str}</span>
-                <div class="theme-toggle-container" onclick="toggleTheme()">
-                    <svg id="theme-icon" class="theme-icon" viewBox="0 0 24 24">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <span class="theme-label" id="theme-text">Dark theme</span>
-                    <div class="toggle-pill"><div class="toggle-circle"></div></div>
-                </div>
+            <div class="header-right">
+                <div id="live-clock">00:00:00</div>
+                <div style="font-size: 12px; font-weight: bold;">{date_str}</div>
             </div>
         </header>
 
-        <div class="ticker-container">
-            <div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-              {{
-                "symbols": [
-                  {{ "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" }},
-                  {{ "proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100" }},
-                  {{ "proName": "FX_IDC:EURUSD", "title": "EUR/USD" }},
-                  {{ "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" }},
-                  {{ "proName": "OANDA:XAUUSD", "title": "Gold" }},
-                  {{ "proName": "OANDA:WTICOUSD", "title": "WTI Oil" }},
-                  {{ "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" }}
-                ],
-                "showSymbolLogo": true,
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "displayMode": "adaptive",
-                "locale": "en"
-              }}
-              </script>
+        <div style="height:40px; overflow:hidden; border-bottom:1px solid var(--border); background: #131722;">
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {{
+              "symbols": [
+                {{"proName":"FOREXCOM:SPXUSD","title":"S&P 500"}},
+                {{"proName":"FX_IDC:EURUSD","title":"EUR/USD"}},
+                {{"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"}},
+                {{"proName":"OANDA:XAUUSD","title":"Gold"}}
+              ],
+              "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
+            }}
+            </script>
+        </div>
+
+        <div class="pulse-container">
+            <div style="font-weight:800; color:var(--text-bold); font-size:12px; margin-bottom:5px;">● MARKET PULSE AI</div>
+            <div style="font-size: 14px; line-height: 1.6;">
+                Analiză algoritmică în timp real. Monitorizăm corelațiile inter-market și sentimentul global pentru a identifica direcția fluxului de capital.
             </div>
         </div>
 
-        <div class="main-wrapper">
+        <div class="main-grid">
     """
-    
-    # Generam HTML-ul impartit pe categorii
-    for cat_name, queries in categories.items():
-        html += f'<div class="category-header">{cat_name}</div><div class="container">'
-        
-        for art in articles:
-            if art['query'] in queries:
-                badge_color = "#26a69a" if "Pozitiv" in art['sentiment'] else ("#ef5350" if "Negativ" in art['sentiment'] else "#787b86")
-                puncte_forte_curat = art['puncte_forte'].replace('*', '')
-                puncte_slabe_curat = art['puncte_slabe'].replace('*', '')
 
-                html += f"""
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">{art['query']}</span>
-                            <span class="badge" style="background:{badge_color};">{art['sentiment']}</span>
-                        </div>
-                        
-                        <a href="{art['link']}" class="title" target="_blank">{art['title']}</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">{art['web_exp']}</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                {puncte_forte_curat}
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                {puncte_slabe_curat}
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>{art['indrumare']}</div>
-                        </div>
-                    </div>
-                """
-        html += '</div>' # Inchidem containerul categoriei
+    categories = {
+        "S&P 500": "stocks", "Nasdaq 100": "stocks", "Apple stock": "stocks", "Tesla stock": "stocks", "Nvidia stock": "stocks",
+        "EURUSD": "forex", "GBPUSD": "forex", "USDJPY": "forex",
+        "Gold market": "crypto", "WTI Oil": "crypto", "Bitcoin": "crypto"
+    }
+
+    for art in articles:
+        cat = categories.get(art['query'], "all")
+        b_color = "#26a69a" if "Pozitiv" in art['sentiment'] else ("#ef5350" if "Negativ" in art['sentiment'] else "#787b86")
+        html += f"""
+            <div class="card" data-category="{cat}">
+                <span class="badge" style="background:{b_color}">{art['sentiment']}</span>
+                <div class="market-label">{art['query']}</div>
+                <a href="{art['link']}" class="card-title" target="_blank">{art['title']}</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">{art['web_exp']}</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">{art['indrumare']}</div>
+            </div>
+        """
 
     html += """
         </div>
         <script>
-            // --- LOGICA PENTRU DARK/LIGHT MODE ---
-            function toggleTheme() {
-                const html = document.documentElement;
-                const text = document.getElementById('theme-text');
-                const icon = document.getElementById('theme-icon');
-                
-                if (html.getAttribute('data-theme') === 'dark') {
-                    html.setAttribute('data-theme', 'light');
-                    localStorage.setItem('pref-theme', 'light');
-                    text.innerText = 'Light theme';
-                    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-                } else {
-                    html.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('pref-theme', 'dark');
-                    text.innerText = 'Dark theme';
-                    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-                }
+            function filterMarket(category, btn) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.toggle('hidden', category !== 'all' && card.getAttribute('data-category') !== category);
+                });
             }
-            const savedTheme = localStorage.getItem('pref-theme') || 'dark';
-            if (savedTheme === 'light') toggleTheme(); 
-
-            // --- LOGICA PENTRU CEASUL LIVE SI FUSUL ORAR ---
-            let currentTZ = localStorage.getItem('pref-tz') || 'local';
-            document.getElementById('tz-select').value = currentTZ;
-
             function updateClock() {
-                const now = new Date();
-                let options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                if (currentTZ !== 'local') options.timeZone = currentTZ;
-                
-                try {
-                    const timeString = new Intl.DateTimeFormat('en-GB', options).format(now);
-                    document.getElementById('live-clock').innerText = timeString;
-                } catch(e) {
-                    document.getElementById('live-clock').innerText = '00:00:00';
-                }
+                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB');
             }
-
-            function changeTimezone() {
-                currentTZ = document.getElementById('tz-select').value;
-                localStorage.setItem('pref-tz', currentTZ);
-                updateClock();
-            }
-
-            setInterval(updateClock, 1000);
-            updateClock(); 
+            setInterval(updateClock, 1000); updateClock();
         </script>
-    </body>
-    </html>
+    </body></html>
     """
     return html
 
-def send_email(html_content):
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"📊 Analiză Piață: {datetime.now().strftime('%d-%m-%Y')}"
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = RECEIVER_EMAIL
-        msg.attach(MIMEText(html_content, "html"))
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
-        server.quit()
-        print("\n✅ Email-ul a fost trimis cu succes!")
-    except Exception as e:
-        print(f"\n❌ Eroare la trimiterea emailului: {e}")
-
 def main():
-    queries = ["Gold market", "WTI Oil", "EURUSD", "GBPUSD", "USDJPY", "Bitcoin", "S&P 500", "Nasdaq 100", "Apple stock", "Tesla stock", "Nvidia stock"]
+    queries = ["S&P 500", "Nasdaq 100", "Apple stock", "Tesla stock", "Nvidia stock", "EURUSD", "GBPUSD", "USDJPY", "Gold market", "WTI Oil", "Bitcoin"]
     all_articles = []
-    print("🤖 Se pornește analiza terminalului...")
+    
     for q in queries:
-        print(f"-> Caut știri: {q}")
-        articles = fetch_news(q, 1)
-        for a in articles:
-            s, e, w, pf, ps, i = analyze_with_ai(a['title'], a['original_summary'], a['source'], q)
-            a.update({'sentiment': s, 'email_take': e, 'web_exp': w, 'puncte_forte': pf, 'puncte_slabe': ps, 'indrumare': i})
-            all_articles.append(a)
-            time.sleep(6)
-            
-    print("\nGenerăm interfețele...")
-    with open("index.html", "w", encoding="utf-8") as f: 
+        news = fetch_news(q, 1)
+        for n in news:
+            s, e, w, pf, ps, i = analyze_with_ai(n['title'], n['original_summary'], n['source'], q)
+            n.update({'sentiment': s, 'email_take': e, 'web_exp': w, 'puncte_forte': pf, 'puncte_slabe': ps, 'indrumare': i})
+            all_articles.append(n)
+            time.sleep(1)
+
+    with open("index.html", "w", encoding="utf-8") as f:
         f.write(generate_web_html(all_articles))
     
-    current_utc_hour = datetime.utcnow().hour
-    if current_utc_hour == 6:
-        send_email(generate_email_html(all_articles))
-        print("✅ Acesta este update-ul de dimineață. Email-ul a fost trimis cu succes!")
-    else:
-        print(f"🔄 Update de peste zi (Ora UTC: {current_utc_hour}). Site-ul a fost actualizat, dar email-ul NU a fost trimis.")
+    # Trimite email la ora 06:00 UTC (08:00 RO)
+    if datetime.utcnow().hour == 6:
+        send_email(all_articles)
 
 if __name__ == "__main__":
     main()

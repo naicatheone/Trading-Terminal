@@ -1,19 +1,16 @@
-  name: Trading Terminal Bot
+name: Trading Terminal Bot
 
 on:
   schedule:
-    # 08:30 RO (06:30 UTC) - Morning Briefing & Pregatire Londra
+    # 08:30 RO (06:30 UTC)
     - cron: '30 6 * * *'
-    # 12:30 RO (10:30 UTC) - Update la pranz (dupa datele Europene)
+    # 12:30 RO (10:30 UTC)
     - cron: '30 10 * * *'
-    # 15:45 RO (13:45 UTC) - US Pre-Market (dupa datele din SUA de la 15:30)
+    # 15:45 RO (13:45 UTC)
     - cron: '45 13 * * *'
-    # 21:45 RO (19:45 UTC) - US Close & FOMC (inainte de inchiderea Wall Street)
+    # 21:45 RO (19:45 UTC)
     - cron: '45 19 * * *'
-  workflow_dispatch:
-    - cron: '0 5 * * *'
-  # Permite pornirea manuală a robotului oricând dorești
-  workflow_dispatch:
+  workflow_dispatch: # Așa se scrie corect pentru a activa butonul manual
 
 jobs:
   build:

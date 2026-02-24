@@ -328,12 +328,22 @@ def main():
             all_articles.append(a)
             time.sleep(6) # Pauza ca sa evitam limitarile API
             
-    print("\nGenerăm interfețele...")
+   print("\nGenerăm interfețele...")
     with open("index.html", "w", encoding="utf-8") as f: 
         f.write(generate_web_html(all_articles))
     
-    send_email(generate_email_html(all_articles))
-    print("🎉 Gata! Deschide index.html pentru terminal și verifică-ți emailul.")
+    # --- LOGICA PENTRU EMAIL-UL UNIC DE DIMINEAȚĂ ---
+    # GitHub Actions rulează pe ora UTC. Rularea de dimineață este la 06:30 UTC.
+    current_utc_hour = datetime.utcnow().hour
+    
+    if current_utc_hour == 6:
+        send_email(generate_email_html(all_articles))
+        print("✅ Acesta este update-ul de dimineață. Email-ul a fost trimis cu succes!")
+    else:
+        print(f"🔄 Update de peste zi (Ora UTC: {current_utc_hour}). Site-ul a fost actualizat, dar email-ul NU a fost trimis.")
+
+    print("🎉 Gata! Terminalul a fost actualizat cu succes.")
 
 if __name__ == "__main__":
     main()
+

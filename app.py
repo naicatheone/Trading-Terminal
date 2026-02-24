@@ -106,6 +106,14 @@ def generate_email_html(articles):
 
 def generate_web_html(articles):
     date_str = datetime.now().strftime("%d-%m-%Y")
+    
+    # ORGANIZAREA PE CATEGORII (THE INSTITUTIONAL DASHBOARD)
+    categories = {
+        "📈 INDICI & ACȚIUNI": ["S&P 500", "Nasdaq 100", "Apple stock", "Tesla stock", "Nvidia stock"],
+        "💱 PIEȚE VALUTARE (FOREX)": ["EURUSD", "GBPUSD", "USDJPY"],
+        "🥇 MĂRFURI & CRYPTO": ["Gold market", "WTI Oil", "Bitcoin"]
+    }
+    
     html = f"""
     <!DOCTYPE html>
     <html lang="ro" data-theme="dark">
@@ -126,10 +134,17 @@ def generate_web_html(articles):
             /* HEADER & CLOCK */
             header {{ background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }}
             
+            .header-left {{ display: flex; flex-direction: column; }}
+            .logo-title {{ font-weight: 800; color: var(--text-bold); font-size: 22px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }}
+            .tagline {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; font-weight: 600; }}
+            
             .clock-widget {{ display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; gap: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); margin-left: 20px; }}
             .clock-time {{ font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--text-bold); letter-spacing: 1px; min-width: 80px; text-align: center; }}
             .clock-select {{ background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }}
             .clock-select option {{ background: var(--card); color: var(--text-bold); }}
+
+            /* TICKER TAPE CONTAINER */
+            .ticker-container {{ border-bottom: 1px solid var(--border); background-color: var(--card); height: 44px; overflow: hidden; }}
 
             /* TOGGLE BUTTON */
             .theme-toggle-container {{ display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }}
@@ -141,40 +156,43 @@ def generate_web_html(articles):
             [data-theme="dark"] .toggle-pill {{ background-color: #3b82f6; }}
             [data-theme="dark"] .toggle-circle {{ background-color: #ffffff; transform: translateX(20px); }}
 
-            /* GRID & CARDS */
-            .container {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 25px; padding: 40px; max-width: 1600px; margin: auto; }}
-            .card {{ background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 30px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+            /* LAYOUT & CARDS */
+            .main-wrapper {{ max-width: 1600px; margin: auto; padding: 30px 40px; }}
+            .category-header {{ font-size: 20px; color: var(--text-bold); font-weight: 800; margin: 40px 0 20px 0; border-bottom: 2px solid var(--accent); padding-bottom: 10px; display: inline-block; letter-spacing: 1px; }}
+            
+            .container {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 25px; }}
+            .card {{ background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; }}
             .card:hover {{ border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }}
             
-            /* LABELS & TITLES */
-            .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
-            .market-tag {{ font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }}
-            .badge {{ padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }}
-            .title {{ color: var(--text-bold); font-size: 18px; text-decoration: none; font-weight: 700; display: block; margin-bottom: 25px; line-height: 1.4; transition: color 0.2s; }}
-            .title:hover {{ color: var(--accent); }}
+            .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }}
+            .market-tag {{ font-size: 13px; color: var(--text-bold); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--bg); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); }}
+            .badge {{ padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }}
             
-            /* SECTION STRUCTURING */
-            .section-title {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin: 25px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
-            .text-content {{ font-size: 14px; line-height: 1.7; color: var(--text); margin-top: 0; }}
+            .title {{ color: var(--accent); font-size: 16px; text-decoration: none; font-weight: 700; display: block; margin-bottom: 20px; line-height: 1.4; transition: opacity 0.2s; }}
+            .title:hover {{ opacity: 0.8; text-decoration: underline; }}
             
-            /* PROS / CONS BOXES */
-            .pros-cons-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }}
-            .box {{ padding: 15px; border-radius: 8px; font-size: 13.5px; line-height: 1.6; color: var(--text); }}
-            .box strong {{ display: block; margin-bottom: 8px; font-size: 12px; letter-spacing: 0.5px; }}
+            .section-title {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin: 15px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
+            .text-content {{ font-size: 14px; line-height: 1.6; color: var(--text); margin-top: 0; flex-grow: 1; }}
+            
+            .pros-cons-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }}
+            .box {{ padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--text); }}
+            .box strong {{ display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }}
             .pro {{ background: rgba(38, 166, 154, 0.05); border-left: 3px solid #26a69a; }}
             .pro strong {{ color: #26a69a; }}
             .con {{ background: rgba(239, 83, 80, 0.05); border-left: 3px solid #ef5350; }}
             .con strong {{ color: #ef5350; }}
             
-            /* ACTION BOX */
-            .action-box {{ margin-top: 25px; padding: 18px; background: var(--accent-bg); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 14.5px; font-weight: 500; color: var(--text-bold); line-height: 1.6; display: flex; gap: 12px; }}
+            .action-box {{ margin-top: 20px; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text-bold); line-height: 1.5; display: flex; gap: 12px; }}
         </style>
     </head>
     <body>
         <header>
             <div style="display:flex; align-items:center;">
-                <div style="font-weight: 800; color: var(--text-bold); font-size: 20px; letter-spacing: 1px;">
-                    <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+                <div class="header-left">
+                    <div class="logo-title">
+                        <span style="color: var(--accent);">⬡</span> TERMINAL PRO
+                    </div>
+                    <div class="tagline">AI-Powered Macro Intelligence</div>
                 </div>
                 
                 <div class="clock-widget">
@@ -191,7 +209,7 @@ def generate_web_html(articles):
             </div>
 
             <div style="display:flex; align-items:center; gap:30px;">
-                <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Actualizat: {date_str}</span>
+                <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Update: {date_str}</span>
                 <div class="theme-toggle-container" onclick="toggleTheme()">
                     <svg id="theme-icon" class="theme-icon" viewBox="0 0 24 24">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -201,44 +219,76 @@ def generate_web_html(articles):
                 </div>
             </div>
         </header>
-        <div class="container">
-    """
-    for art in articles:
-        badge_color = "#26a69a" if "Pozitiv" in art['sentiment'] else ("#ef5350" if "Negativ" in art['sentiment'] else "#787b86")
-        
-        puncte_forte_curat = art['puncte_forte'].replace('*', '')
-        puncte_slabe_curat = art['puncte_slabe'].replace('*', '')
 
-        html += f"""
-            <div class="card">
-                <div class="card-header">
-                    <span class="market-tag">{art['query']}</span>
-                    <span class="badge" style="background:{badge_color};">{art['sentiment']}</span>
-                </div>
-                
-                <a href="{art['link']}" class="title" target="_blank">{art['title']}</a>
-                
-                <div class="section-title">📊 CONTEXT MACRO</div>
-                <p class="text-content">{art['web_exp']}</p>
-                
-                <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                <div class="pros-cons-grid">
-                    <div class="box pro">
-                        <strong>BULLISH FACTORS</strong>
-                        {puncte_forte_curat}
-                    </div>
-                    <div class="box con">
-                        <strong>BEARISH RISKS</strong>
-                        {puncte_slabe_curat}
-                    </div>
-                </div>
-                
-                <div class="action-box">
-                    <span style="font-size: 18px;">🎯</span> 
-                    <div>{art['indrumare']}</div>
-                </div>
+        <div class="ticker-container">
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+              {{
+                "symbols": [
+                  {{ "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" }},
+                  {{ "proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100" }},
+                  {{ "proName": "FX_IDC:EURUSD", "title": "EUR/USD" }},
+                  {{ "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" }},
+                  {{ "proName": "OANDA:XAUUSD", "title": "Gold" }},
+                  {{ "proName": "OANDA:WTICOUSD", "title": "WTI Oil" }},
+                  {{ "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" }}
+                ],
+                "showSymbolLogo": true,
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "displayMode": "adaptive",
+                "locale": "en"
+              }}
+              </script>
             </div>
-        """
+        </div>
+
+        <div class="main-wrapper">
+    """
+    
+    # Generam HTML-ul impartit pe categorii
+    for cat_name, queries in categories.items():
+        html += f'<div class="category-header">{cat_name}</div><div class="container">'
+        
+        for art in articles:
+            if art['query'] in queries:
+                badge_color = "#26a69a" if "Pozitiv" in art['sentiment'] else ("#ef5350" if "Negativ" in art['sentiment'] else "#787b86")
+                puncte_forte_curat = art['puncte_forte'].replace('*', '')
+                puncte_slabe_curat = art['puncte_slabe'].replace('*', '')
+
+                html += f"""
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="market-tag">{art['query']}</span>
+                            <span class="badge" style="background:{badge_color};">{art['sentiment']}</span>
+                        </div>
+                        
+                        <a href="{art['link']}" class="title" target="_blank">{art['title']}</a>
+                        
+                        <div class="section-title">📊 CONTEXT MACRO</div>
+                        <p class="text-content">{art['web_exp']}</p>
+                        
+                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
+                        <div class="pros-cons-grid">
+                            <div class="box pro">
+                                <strong>BULLISH FACTORS</strong>
+                                {puncte_forte_curat}
+                            </div>
+                            <div class="box con">
+                                <strong>BEARISH RISKS</strong>
+                                {puncte_slabe_curat}
+                            </div>
+                        </div>
+                        
+                        <div class="action-box">
+                            <span style="font-size: 18px;">🎯</span> 
+                            <div>{art['indrumare']}</div>
+                        </div>
+                    </div>
+                """
+        html += '</div>' # Inchidem containerul categoriei
+
     html += """
         </div>
         <script>
@@ -270,11 +320,7 @@ def generate_web_html(articles):
             function updateClock() {
                 const now = new Date();
                 let options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                
-                // Daca nu e pe Local, setam fusul orar specific
-                if (currentTZ !== 'local') {
-                    options.timeZone = currentTZ;
-                }
+                if (currentTZ !== 'local') options.timeZone = currentTZ;
                 
                 try {
                     const timeString = new Intl.DateTimeFormat('en-GB', options).format(now);
@@ -286,11 +332,10 @@ def generate_web_html(articles):
 
             function changeTimezone() {
                 currentTZ = document.getElementById('tz-select').value;
-                localStorage.setItem('pref-tz', currentTZ); // Salveaza alegerea
-                updateClock(); // Updateaza imediat
+                localStorage.setItem('pref-tz', currentTZ);
+                updateClock();
             }
 
-            // Pornim ceasul si il actualizam la fiecare 1 secunda
             setInterval(updateClock, 1000);
             updateClock(); 
         </script>
@@ -326,24 +371,18 @@ def main():
             s, e, w, pf, ps, i = analyze_with_ai(a['title'], a['original_summary'], a['source'], q)
             a.update({'sentiment': s, 'email_take': e, 'web_exp': w, 'puncte_forte': pf, 'puncte_slabe': ps, 'indrumare': i})
             all_articles.append(a)
-            time.sleep(6) # Pauza ca sa evitam limitarile API
+            time.sleep(6)
             
-   print("\nGenerăm interfețele...")
+    print("\nGenerăm interfețele...")
     with open("index.html", "w", encoding="utf-8") as f: 
         f.write(generate_web_html(all_articles))
     
-    # --- LOGICA PENTRU EMAIL-UL UNIC DE DIMINEAȚĂ ---
-    # GitHub Actions rulează pe ora UTC. Rularea de dimineață este la 06:30 UTC.
     current_utc_hour = datetime.utcnow().hour
-    
     if current_utc_hour == 6:
         send_email(generate_email_html(all_articles))
         print("✅ Acesta este update-ul de dimineață. Email-ul a fost trimis cu succes!")
     else:
         print(f"🔄 Update de peste zi (Ora UTC: {current_utc_hour}). Site-ul a fost actualizat, dar email-ul NU a fost trimis.")
 
-    print("🎉 Gata! Terminalul a fost actualizat cu succes.")
-
 if __name__ == "__main__":
     main()
-

@@ -3,501 +3,198 @@
     <html lang="ro" data-theme="dark">
     <head>
         <meta charset="utf-8">
-        <title>Pro Trading Terminal</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Terminal Pro AI</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
         <style>
-            :root[data-theme="dark"] {
-                --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --text-muted: #848e9c; 
-                --border: #2b3139; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.1);
-            }
-            :root[data-theme="light"] {
-                --bg: #f0f2f5; --card: #ffffff; --text: #4a5568; --text-bold: #1a202c; --text-muted: #718096; 
-                --border: #e2e8f0; --accent: #2962ff; --accent-bg: rgba(41, 98, 255, 0.05);
-            }
-            body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; transition: all 0.3s ease; }
+            :root { --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --border: #2b3139; --accent: #2962ff; }
+            body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 50px; }
             
-            /* HEADER & CLOCK */
-            header { background-color: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100; }
+            header { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+            .logo { font-weight: 800; font-size: 20px; color: var(--text-bold); min-width: 150px; }
             
-            .header-left { display: flex; flex-direction: column; }
-            .logo-title { font-weight: 800; color: var(--text-bold); font-size: 22px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-            .tagline { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; font-weight: 600; }
-            
-            .clock-widget { display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; gap: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); margin-left: 20px; }
-            .clock-time { font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--text-bold); letter-spacing: 1px; min-width: 80px; text-align: center; }
-            .clock-select { background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }
-            .clock-select option { background: var(--card); color: var(--text-bold); }
+            .tabs { display: flex; gap: 10px; }
+            .tab-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
+            .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-            /* TICKER TAPE CONTAINER */
-            .ticker-container { border-bottom: 1px solid var(--border); background-color: var(--card); height: 44px; overflow: hidden; }
+            .header-right { display: flex; align-items: center; gap: 20px; min-width: 150px; justify-content: flex-end; }
+            #live-clock { font-family: monospace; font-weight: bold; color: var(--accent); font-size: 16px; }
 
-            /* TOGGLE BUTTON */
-            .theme-toggle-container { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
-            .theme-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-bold); }
-            .theme-label { font-size: 14px; color: var(--text-bold); font-weight: 500; }
-            .toggle-pill { width: 44px; height: 24px; border-radius: 12px; background-color: #cbd5e1; position: relative; transition: 0.3s; display: flex; align-items: center; }
-            .toggle-circle { width: 18px; height: 18px; background-color: #ffffff; border-radius: 50%; position: absolute; left: 3px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+            .pulse-container { margin: 20px 40px; padding: 20px; background: rgba(41, 98, 255, 0.05); border-left: 4px solid var(--accent); border-radius: 4px; }
             
-            [data-theme="dark"] .toggle-pill { background-color: #3b82f6; }
-            [data-theme="dark"] .toggle-circle { background-color: #ffffff; transform: translateX(20px); }
-
-            /* LAYOUT & CARDS */
-            .main-wrapper { max-width: 1600px; margin: auto; padding: 30px 40px; }
-            .category-header { font-size: 20px; color: var(--text-bold); font-weight: 800; margin: 40px 0 20px 0; border-bottom: 2px solid var(--accent); padding-bottom: 10px; display: inline-block; letter-spacing: 1px; }
+            .main-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 0 40px; }
+            .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }
+            .card.hidden { display: none; }
             
-            .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 25px; }
-            .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; }
-            .card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+            .badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }
+            .market-label { font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; }
+            .card-title { display: block; margin: 10px 0; color: var(--text-bold); text-decoration: none; font-weight: 700; line-height: 1.4; font-size: 16px; }
             
-            .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-            .market-tag { font-size: 13px; color: var(--text-bold); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--bg); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); }
-            .badge { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
-            
-            .title { color: var(--accent); font-size: 16px; text-decoration: none; font-weight: 700; display: block; margin-bottom: 20px; line-height: 1.4; transition: opacity 0.2s; }
-            .title:hover { opacity: 0.8; text-decoration: underline; }
-            
-            .section-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin: 15px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-            .text-content { font-size: 14px; line-height: 1.6; color: var(--text); margin-top: 0; flex-grow: 1; }
-            
-            .pros-cons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-            .box { padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--text); }
-            .box strong { display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
-            .pro { background: rgba(38, 166, 154, 0.05); border-left: 3px solid #26a69a; }
-            .pro strong { color: #26a69a; }
-            .con { background: rgba(239, 83, 80, 0.05); border-left: 3px solid #ef5350; }
-            .con strong { color: #ef5350; }
-            
-            .action-box { margin-top: 20px; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text-bold); line-height: 1.5; display: flex; gap: 12px; }
+            .section-label { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+            .content-text { font-size: 13px; line-height: 1.5; margin-top: 8px; }
         </style>
     </head>
     <body>
         <header>
-            <div style="display:flex; align-items:center;">
-                <div class="header-left">
-                    <div class="logo-title">
-                        <span style="color: var(--accent);">⬡</span> TERMINAL PRO
-                    </div>
-                    <div class="tagline">AI-Powered Macro Intelligence</div>
-                </div>
-                
-                <div class="clock-widget">
-                    <span id="live-clock" class="clock-time">00:00:00</span>
-                    <select id="tz-select" class="clock-select" onchange="changeTimezone()">
-                        <option value="local">Local Time</option>
-                        <option value="America/New_York">New York (EST)</option>
-                        <option value="Europe/London">London (GMT)</option>
-                        <option value="Asia/Tokyo">Tokyo (JST)</option>
-                        <option value="Australia/Sydney">Sydney (AEST)</option>
-                        <option value="UTC">UTC</option>
-                    </select>
-                </div>
+            <div class="logo">⬡ TERMINAL PRO</div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="filterMarket('all', this)">TOATE</button>
+                <button class="tab-btn" onclick="filterMarket('stocks', this)">INDICI & ACȚIUNI</button>
+                <button class="tab-btn" onclick="filterMarket('forex', this)">FOREX</button>
+                <button class="tab-btn" onclick="filterMarket('crypto', this)">CRYPTO & MARFURI</button>
             </div>
-
-            <div style="display:flex; align-items:center; gap:30px;">
-                <span style="font-size:13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Update: 24-02-2026</span>
-                <div class="theme-toggle-container" onclick="toggleTheme()">
-                    <svg id="theme-icon" class="theme-icon" viewBox="0 0 24 24">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <span class="theme-label" id="theme-text">Dark theme</span>
-                    <div class="toggle-pill"><div class="toggle-circle"></div></div>
-                </div>
+            <div class="header-right">
+                <div id="live-clock">00:00:00</div>
+                <div style="font-size: 12px; font-weight: bold;">24-02-2026</div>
             </div>
         </header>
 
-        <div class="ticker-container">
-            <div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-              {
-                "symbols": [
-                  { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-                  { "proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100" },
-                  { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-                  { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
-                  { "proName": "OANDA:XAUUSD", "title": "Gold" },
-                  { "proName": "OANDA:WTICOUSD", "title": "WTI Oil" },
-                  { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" }
-                ],
-                "showSymbolLogo": true,
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "displayMode": "adaptive",
-                "locale": "en"
-              }
-              </script>
+        <div style="height:40px; overflow:hidden; border-bottom:1px solid var(--border); background: #131722;">
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
+                {"proName":"FX_IDC:EURUSD","title":"EUR/USD"},
+                {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
+                {"proName":"OANDA:XAUUSD","title":"Gold"}
+              ],
+              "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
+            }
+            </script>
+        </div>
+
+        <div class="pulse-container">
+            <div style="font-weight:800; color:var(--text-bold); font-size:12px; margin-bottom:5px;">● MARKET PULSE AI</div>
+            <div style="font-size: 14px; line-height: 1.6;">
+                Analiză algoritmică în timp real. Monitorizăm corelațiile inter-market și sentimentul global pentru a identifica direcția fluxului de capital.
             </div>
         </div>
 
-        <div class="main-wrapper">
-    <div class="category-header">📈 INDICI & ACȚIUNI</div><div class="container">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">S&P 500</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMi7gFBVV95cUxNZV9Ja0xQTE1qMk5LQkRjLVlWc0poQXowTWVqUHdyWXgwZTJCSlROVmIxTXR3WWpVeU9iaEd6Rl9DM3E3djJfekNJQXhCUy0yd2hOWVhnc0NsRy12ckFvaUtGUXoxY0ZVVDNpTHR2bS02YmVDR3JnNy1LMzdnZ1FxdV95MDdZeThGOHJSQ0RZd3U0WVRzUjdQYUhEOGNidVdHbDBUaHdTRHNGUURjZHZzMGgtVXVpTnZvNDhfbTcxWUhoOE5pSkFfM1M0V0YwY0dvTEhhNUxmalJlNU5TWVY5LWNmakRucTYycUlPQmd3?oc=5" class="title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq futures tick up after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Nasdaq 100</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMifkFVX3lxTE12YVg5UElxSVFTT0hQdzBPdlQtck1vdVJqamUwZWFxa2M4MVIybkZwT29UTjhOTC1VUEF4eGVBOWtENDFDdTBNa3pTTzBJdktjZWFzSGRGS3lRVy0yMUJueDVyUkt4Q2RzV1pHb3Awcm9OSzBpT3lxYnFrMXFhZw?oc=5" class="title" target="_blank">1 Nasdaq 100 Stock to Research Further and 2 Facing Headwinds - Yahoo Finance</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Apple stock</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxQdGJGRDZGRGIyamVxaE1XcUJXSGZ0c1VlenFpR3RCTGlMbEdTczZGc1duX3EwN3R0NDIwVHh2anEyMTFOUGNHV1dfUnltdDRUVnVWV3FFMVpIaFgxTkk4R2JFaUd3Rlp4aG1reXZ2c1g1bGY0M24wZC1ScW1rVzVDX19HLTI?oc=5" class="title" target="_blank">How Many Markets Does Apple Dominate? The Answer Might Shock You - Yahoo Finance</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Tesla stock</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMijgFBVV95cUxPdTgzQmtSVTgwa1BYLUtheE9FbGFvZDdaRXhMNEJPREJoRUxRcWl6Zmg5ZkhmVXdKVkh1RHRFdEdKQWtUb3pzVHZBT1FFZVluWjRWRFIxVkY1NUN3YWJXWXFhQ0owZFZKa2dTcHliSXp4SzNJNkNISS04Yi1qZnRYdjRNLUU5REVDOTV6OVRB?oc=5" class="title" target="_blank">Tesla Stock: Is TSLA Outperforming the Consumer Discretionary Sector? - Yahoo Finance</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Nvidia stock</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMidEFVX3lxTE5jMnRwUTk4amRwMmhfVVNfdDdBR0xJRF9QN3o1SzJaTHYwa3ZBNXBGMmpwSzZCMFFFNF9qVmZGU0VxUElDVTJRVXF5dzlZbEpMLW5EU1ZGVmt3VmxDUE1Od3JBZU1NUl9FZHlqUi1fTzRleVR0?oc=5" class="title" target="_blank">Racing to Catch up With Nvidia, AMD Signs Chips-for-Stock Deal With Meta - The New York Times</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                </div><div class="category-header">💱 PIEȚE VALUTARE (FOREX)</div><div class="container">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">EURUSD</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMiZEFVX3lxTE90TzVkMEtENktkRVJFN3QxV0tYbVZJS0ozMTE5b0F6ekxwNjRFYTFveFhVZWRhbGJuWFRpU0JiUnpsa2FsbEZ5c0ZNeHJiZnc5TldpNmM1NGJPMFhlNUFkYWNjSlk?oc=5" class="title" target="_blank">EUR USD Technical Analysis - Investing.com</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">GBPUSD</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMigAFBVV95cUxNSnhLV1ZNUVNfd2JtZ0t3anlGaXdwRERYLWdXOF84eGUyZTgzaWJEZ25veHBjd1lsN2s0OFZHVS1CSy0wSWhqc3FIbXI0SE50TWdzS25na3FSR18wTUdvM09DaW9kTEFMR1d5LUhzUlBSUnJycnJ4Y0JZcVE0MlpIRA?oc=5" class="title" target="_blank">GBP/USD – A Breakout Opportunity - Investing.com</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">USDJPY</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMi1gFBVV95cUxNTzJqVlNQZ2s2MzlRQ0o1aDJTZnZldnJ1dENTU3NGWmlDSGU4VjNxanV0RUVNQUxmRnFqVDRKSVpPUlBpZVZycU5lQl92c1NIZ2NwYVJ2TzFLQWpId3ZXMFNVNV8tMkpYUEVuM2E1RUtNMVc3YTRycmNMaWpRSTBxTzVYLUlWNTVnaVRKNXRrTV8tTXRycnY1LVZqWXJuSDRuUUVRT08xUDhVb19iX01LeU5JS1VrXzFHZjgtTDc2QUU3SjdFd3R2NXh0U1ZVcTMzQzdKaHdR0gHbAUFVX3lxTE41TGJIaHMzV0p4UmwwaEZpNHI2X3Q5dVNEWEMtejViX1ctSFgxXzZyMWtDOVE4V2MtelRnakhqOTdWWVRsdERZM1hsMGE2SFFUaUxJemMxSFBuSDV5Z2p3RzdEaFBFbjRoQVUweXJyWVNUNjZwdnpyc0hVeDhOenhvRTVfd1dnV2RodVZjb2V4UWtpSGtBaS1nV3A1cmFxS0NSSnhWOHJIREhZQXNrWkdQRzZXM1o3dHJwUnhUd0tVSkREcFQ4MXNOOUQxeE9NYy1BZ2ZieDRwVUpUYw?oc=5" class="title" target="_blank">EURUSD/GBPUSD are little changed and looking for a shove. USDJPY is sharply higher. Why? - investingLive</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                </div><div class="category-header">🥇 MĂRFURI & CRYPTO</div><div class="container">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Gold market</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxOeWVvMTBqbzBHWVdvUDYyQ3lBT0VCenQzSENNMV8ydnpxWXh5ekNRNklTVEcwX2JPc2lEaHZSMzVVb2JlcTJNQXplaG1iLVJaem55UjN5QUducUZXMVN5aHl1R2ZGUVBDZTlCSVVyYWFJdWk0YlFIOWExOGhwQlpLRFFpZ2tTWnlNQ0JqTWdxNk94ZWx0M0J5aA?oc=5" class="title" target="_blank">What is the highest gold price in history? Here's how it's changed over the past year. - CBS News</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">WTI Oil</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMirwFBVV95cUxNd0x6Zy1Xd25wRTRnd2libEZXSndkbEgxUXRrVFBoZ3pSSWpCNmNHY3VNZTlPUDdnSC1iOTFmN2VZSmZlbEFqT2N5Qmc5MHY1R3l6dnJzZmpteXVqTHNWSkhSX1ZSOC0tSGxUSmVyeXdPa0ViYUpNTndvd2VJSTV3LTlvMlo1VEJHTS1rSk42cTNLeFp4M3Q0VnBNX3pjeE1pTlVQQmJzbk9KWDBoQVhB?oc=5" class="title" target="_blank">Oil Prices Rise as Trump Weighs US Action on Iran—How High Could They Go? - Morningstar Canada</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="market-tag">Bitcoin</span>
-                            <span class="badge" style="background:#787b86;">Neutru</span>
-                        </div>
-                        
-                        <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxNSEhHVEQ4MzdIZF9iNTBZQ2d2OS01bHdlVkNNeDByZjB4eGxjU2RQM29hVW5OX2t3YmtUQW1hdllPaVppOEJVekVMU3lVdjhTODN6NzE2cC1qeUdaNHpVSVZQQlVZampCVlo5M3d3OFlaOFVGODhDTmI4NXBsYmItNkNmX0xrVDBBUkdTWTZXWjkxY3M4Xzk0ZTFrT0ZRZ0ZpWjNSMW5EY3FMcG1N0gGyAUFVX3lxTE5XeXB1YnBSaTF0ZTFIYmJjek9ZUUJua2oxTUlCZWNOSTJrZmJqdFdfNDliVkxUb3J0cWFwc3dCY2N6dl9IREJvVWhBZU1UM3NwdFpTbWROWG1TR2NKS1ZjTjZNMlJQVktZcmJRYTNTVjVKREN6U2VITTF2TVVzTTcxdktmbGNNUGN3SlR0cDlOWnhSbHhxLTRXcEROaUdGUWlIM1g4aHpKT2xBNmNfSE9IYUE?oc=5" class="title" target="_blank">Bitcoin extends decline, falling below $63,000 before paring some losses - CNBC</a>
-                        
-                        <div class="section-title">📊 CONTEXT MACRO</div>
-                        <p class="text-content">Nu am putut analiza din cauza unei erori la serverul AI.</p>
-                        
-                        <div class="section-title">⚖️ ARGUMENTE PIAȚĂ</div>
-                        <div class="pros-cons-grid">
-                            <div class="box pro">
-                                <strong>BULLISH FACTORS</strong>
-                                -
-                            </div>
-                            <div class="box con">
-                                <strong>BEARISH RISKS</strong>
-                                -
-                            </div>
-                        </div>
-                        
-                        <div class="action-box">
-                            <span style="font-size: 18px;">🎯</span> 
-                            <div>-</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="main-grid">
+    
+            <div class="card" data-category="stocks">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">S&P 500</div>
+                <a href="https://news.google.com/rss/articles/CBMi7gFBVV95cUxNZV9Ja0xQTE1qMk5LQkRjLVlWc0poQXowTWVqUHdyWXgwZTJCSlROVmIxTXR3WWpVeU9iaEd6Rl9DM3E3djJfekNJQXhCUy0yd2hOWVhnc0NsRy12ckFvaUtGUXoxY0ZVVDNpTHR2bS02YmVDR3JnNy1LMzdnZ1FxdV95MDdZeThGOHJSQ0RZd3U0WVRzUjdQYUhEOGNidVdHbDBUaHdTRHNGUURjZHZzMGgtVXVpTnZvNDhfbTcxWUhoOE5pSkFfM1M0V0YwY0dvTEhhNUxmalJlNU5TWVY5LWNmakRucTYycUlPQmd3?oc=5" class="card-title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq futures tick up after AI-fueled sell-off as new Trump tariff kicks in - Yahoo Finance</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="stocks">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Nasdaq 100</div>
+                <a href="https://news.google.com/rss/articles/CBMiygFBVV95cUxOMTRTMEtwVXA5TzhicF9RNjNNbWhJa2k1Q1JHYm1pRjd4V1k4NHpPVndIQk8zNDNTTnl4UFRuR3ZiUURpck84X2huRERmaWZWYzltT3V4MHc2a2tjOC0ySU5vd25HYWN3M1NXelA5Z09zM2cySWg4VWI0YUNMWGpaWjNrXzdXd2FnczBhQVZqTnB4Tkx4NUcyaE5zMUtCMlpXYUNhaW1PX2JGdGw4VTl0ZnBlYm1GSFhiZ245SEJrU0Q1aUV1ZnNsRzBR?oc=5" class="card-title" target="_blank">Nasdaq 100 and S&P500: AMD–Meta Deal Lifts Tech as Software Stocks Stage Recovery - FXEmpire</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="stocks">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Apple stock</div>
+                <a href="https://news.google.com/rss/articles/CBMi4AFBVV95cUxQT29iMzdsYkNJNjJVUU11dkdabGdnR2R1Y1JnZEI0UTg4YzFqV1dCMDh0N2ZWdW5MOFljbTJaX25BT295YjhwM1h3RnVfd2pSMUoyODZwRmptc0xRb3RWdi1nNUM2aHdwSFUtcmVGZk1xTnpmNWlQbER5MVlhOWlSX0ZyOVNzXzJkNzZjLUtKakxLZ09lLTlFYzVQVWNSRjRiR0QxUXJtTjBPT1ZmQUFCUXFkWVlnSXltbFRCTlJSNVA1VjJrUFE3QnJNUVJ5TkVrVWhiNXZBeG1wSFkyLTFDeQ?oc=5" class="card-title" target="_blank">Apple's Services Growth Ride on Strong Content & Games: What's Ahead? - The Globe and Mail</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="stocks">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Tesla stock</div>
+                <a href="https://news.google.com/rss/articles/CBMicEFVX3lxTE9RV21ILUJmQUVVbFNnSnA4VTQ5MVlnNlZhTGJIc2dWV1R1eldhZkQ5Y1dwSjRWTmdTeVAtbDRDVi05ZzVNMFdVUVlKQW9iTDlscXA2MWxDM3NTMWN6WnNYNmtKSlF5aDJSMFRieEZ5X2o?oc=5" class="card-title" target="_blank">Below $400 Again, Is Tesla Stock a Buy? - Nasdaq</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="stocks">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Nvidia stock</div>
+                <a href="https://news.google.com/rss/articles/CBMidEFVX3lxTE5jMnRwUTk4amRwMmhfVVNfdDdBR0xJRF9QN3o1SzJaTHYwa3ZBNXBGMmpwSzZCMFFFNF9qVmZGU0VxUElDVTJRVXF5dzlZbEpMLW5EU1ZGVmt3VmxDUE1Od3JBZU1NUl9FZHlqUi1fTzRleVR0?oc=5" class="card-title" target="_blank">Racing to Catch up With Nvidia, AMD Signs Chips-for-Stock Deal With Meta - The New York Times</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="forex">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">EURUSD</div>
+                <a href="https://news.google.com/rss/articles/CBMiZEFVX3lxTE90TzVkMEtENktkRVJFN3QxV0tYbVZJS0ozMTE5b0F6ekxwNjRFYTFveFhVZWRhbGJuWFRpU0JiUnpsa2FsbEZ5c0ZNeHJiZnc5TldpNmM1NGJPMFhlNUFkYWNjSlk?oc=5" class="card-title" target="_blank">EUR USD Technical Analysis - Investing.com</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="forex">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">GBPUSD</div>
+                <a href="https://news.google.com/rss/articles/CBMigAFBVV95cUxNSnhLV1ZNUVNfd2JtZ0t3anlGaXdwRERYLWdXOF84eGUyZTgzaWJEZ25veHBjd1lsN2s0OFZHVS1CSy0wSWhqc3FIbXI0SE50TWdzS25na3FSR18wTUdvM09DaW9kTEFMR1d5LUhzUlBSUnJycnJ4Y0JZcVE0MlpIRA?oc=5" class="card-title" target="_blank">GBP/USD – A Breakout Opportunity - Investing.com</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="forex">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">USDJPY</div>
+                <a href="https://news.google.com/rss/articles/CBMivgFBVV95cUxORFhtbkRiZ2hZWHl1WDZtR2lvT3E4LVZrWjJQOFZlRW9TOE5XSXZjUW1GcEhDUHZwcmpLSGN3ZnZabXM0WXB5SExqRi0xcXEwemNwaU9MU0xDSWhZQm1fVGhNaFpkNHFNa1RLTFRNWGlUcHVJX3ZLR0NhblRSaVNyVjlrb21SejlPUEU5QjgtMzc4cWhPVmsxS0xYV291MGxJM2FYeGd5aV9XWndtQzkweVNrQ2Q1QUlFdEFiWkR30gHKAUFVX3lxTE1iNER6d1A5QnN1Wk1RT3YtNE5MVE1FME5aNURXTTdlcTdhelY2NXpjR2RTUk85N0FPdV9MMWZORE9yT2NtbkU4ZTdnWm5kd1RuU05LazFQaXE3RGhjalMzakZ0VEtHWmg0YnVSUV9jUzFVeDJLSnJ3TGNoYWMwZmdSN0wzaG1TSm5RNXZSUEtNNFkyQlZSclluM25pbVMwb09wSmdZWHVtb1gxOWZoeFJocG9PSUl4TFNWTm94V0VSME02dGxVUzFiZXc?oc=5" class="card-title" target="_blank">USD/JPY Analysis: The yen weakens following comments from the Prime Minister - FOREX.com</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="crypto">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Gold market</div>
+                <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxQZkFtSHBrcEVFelNkcHVmblo4dUxUUzhpSmcyWWJING9ZOWRXODZqVUNzOHRUYzJPSWZadGZRd1A0cGVHalloemJlQ3FxandRSFZmbmQwZkpCaTU0ZzJyTVJXa29BejQ2dENjWHNjWVkydGRZXzQxSUdSaEc3cnNXVUxEbS0?oc=5" class="card-title" target="_blank">What does $100,000 in gold look like right now? - CBS News</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="crypto">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">WTI Oil</div>
+                <a href="https://news.google.com/rss/articles/CBMirwFBVV95cUxNd0x6Zy1Xd25wRTRnd2libEZXSndkbEgxUXRrVFBoZ3pSSWpCNmNHY3VNZTlPUDdnSC1iOTFmN2VZSmZlbEFqT2N5Qmc5MHY1R3l6dnJzZmpteXVqTHNWSkhSX1ZSOC0tSGxUSmVyeXdPa0ViYUpNTndvd2VJSTV3LTlvMlo1VEJHTS1rSk42cTNLeFp4M3Q0VnBNX3pjeE1pTlVQQmJzbk9KWDBoQVhB?oc=5" class="card-title" target="_blank">Oil Prices Rise as Trump Weighs US Action on Iran—How High Could They Go? - Morningstar Canada</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
+            <div class="card" data-category="crypto">
+                <span class="badge" style="background:#787b86">Neutru</span>
+                <div class="market-label">Bitcoin</div>
+                <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxNSEhHVEQ4MzdIZF9iNTBZQ2d2OS01bHdlVkNNeDByZjB4eGxjU2RQM29hVW5OX2t3YmtUQW1hdllPaVppOEJVekVMU3lVdjhTODN6NzE2cC1qeUdaNHpVSVZQQlVZampCVlo5M3d3OFlaOFVGODhDTmI4NXBsYmItNkNmX0xrVDBBUkdTWTZXWjkxY3M4Xzk0ZTFrT0ZRZ0ZpWjNSMW5EY3FMcG1N0gGyAUFVX3lxTE5XeXB1YnBSaTF0ZTFIYmJjek9ZUUJua2oxTUlCZWNOSTJrZmJqdFdfNDliVkxUb3J0cWFwc3dCY2N6dl9IREJvVWhBZU1UM3NwdFpTbWROWG1TR2NKS1ZjTjZNMlJQVktZcmJRYTNTVjVKREN6U2VITTF2TVVzTTcxdktmbGNNUGN3SlR0cDlOWnhSbHhxLTRXcEROaUdGUWlIM1g4aHpKT2xBNmNfSE9IYUE?oc=5" class="card-title" target="_blank">Bitcoin extends decline, falling below $63,000 before paring some losses - CNBC</a>
+                <div class="section-label">Analiză Macro</div>
+                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="section-label">Strategie</div>
+                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+            </div>
+        
         </div>
         <script>
-            // --- LOGICA PENTRU DARK/LIGHT MODE ---
-            function toggleTheme() {
-                const html = document.documentElement;
-                const text = document.getElementById('theme-text');
-                const icon = document.getElementById('theme-icon');
-                
-                if (html.getAttribute('data-theme') === 'dark') {
-                    html.setAttribute('data-theme', 'light');
-                    localStorage.setItem('pref-theme', 'light');
-                    text.innerText = 'Light theme';
-                    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-                } else {
-                    html.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('pref-theme', 'dark');
-                    text.innerText = 'Dark theme';
-                    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-                }
+            function filterMarket(category, btn) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.toggle('hidden', category !== 'all' && card.getAttribute('data-category') !== category);
+                });
             }
-            const savedTheme = localStorage.getItem('pref-theme') || 'dark';
-            if (savedTheme === 'light') toggleTheme(); 
-
-            // --- LOGICA PENTRU CEASUL LIVE SI FUSUL ORAR ---
-            let currentTZ = localStorage.getItem('pref-tz') || 'local';
-            document.getElementById('tz-select').value = currentTZ;
-
             function updateClock() {
-                const now = new Date();
-                let options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                if (currentTZ !== 'local') options.timeZone = currentTZ;
-                
-                try {
-                    const timeString = new Intl.DateTimeFormat('en-GB', options).format(now);
-                    document.getElementById('live-clock').innerText = timeString;
-                } catch(e) {
-                    document.getElementById('live-clock').innerText = '00:00:00';
-                }
+                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB');
             }
-
-            function changeTimezone() {
-                currentTZ = document.getElementById('tz-select').value;
-                localStorage.setItem('pref-tz', currentTZ);
-                updateClock();
-            }
-
-            setInterval(updateClock, 1000);
-            updateClock(); 
+            setInterval(updateClock, 1000); updateClock();
         </script>
-    </body>
-    </html>
+    </body></html>
     

@@ -1,0 +1,41 @@
+name: Trading Terminal Bot
+
+on:
+  schedule:
+    # Rulează în fiecare dimineață la ora 05:00 UTC (07:00 ora României)
+    - cron: '0 5 * * *'
+  # Permite pornirea manuală a robotului oricând dorești
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codul sursă
+        uses: actions/checkout@v3
+
+      - name: Instalează Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalează pachetele necesare
+        run: |
+          pip install feedparser beautifulsoup4 google-genai
+
+      - name: Rulează Analiza AI
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python app.py
+
+      - name: Salvează noul site (Commit & Push)
+        run: |
+          git config --global user.name "TerminalBot"
+          git config --global user.email "bot@trading.com"
+          git add index.html
+          git commit -m "Update automat: Raport Trading [$(date)]" || exit 0
+          git push

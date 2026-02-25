@@ -9,190 +9,142 @@
         <style>
             :root { --bg: #0b0e11; --card: #181a20; --text: #b7bdc6; --text-bold: #ffffff; --border: #2b3139; --accent: #2962ff; }
             body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 50px; }
-            
             header { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
-            .logo { font-weight: 800; font-size: 20px; color: var(--text-bold); min-width: 150px; }
-            
-            .tabs { display: flex; gap: 10px; }
-            .tab-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
-            .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-            .header-right { display: flex; align-items: center; gap: 20px; min-width: 150px; justify-content: flex-end; }
+            .logo { font-weight: 800; font-size: 20px; color: var(--text-bold); }
             #live-clock { font-family: monospace; font-weight: bold; color: var(--accent); font-size: 16px; }
-
-            .pulse-container { margin: 20px 40px; padding: 20px; background: rgba(41, 98, 255, 0.05); border-left: 4px solid var(--accent); border-radius: 4px; }
-            
-            .main-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 0 40px; }
-            .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }
-            .card.hidden { display: none; }
-            
+            .main-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 20px 40px; }
+            .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
             .badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }
             .market-label { font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; }
-            .card-title { display: block; margin: 10px 0; color: var(--text-bold); text-decoration: none; font-weight: 700; line-height: 1.4; font-size: 16px; }
-            
+            .card-title { display: block; margin: 10px 0; color: var(--text-bold); text-decoration: none; font-weight: 700; line-height: 1.4; }
             .section-label { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
             .content-text { font-size: 13px; line-height: 1.5; margin-top: 8px; }
         </style>
     </head>
     <body>
         <header>
-            <div class="logo">⬡ TERMINAL PRO</div>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="filterMarket('all', this)">TOATE</button>
-                <button class="tab-btn" onclick="filterMarket('stocks', this)">INDICI & ACȚIUNI</button>
-                <button class="tab-btn" onclick="filterMarket('forex', this)">FOREX</button>
-                <button class="tab-btn" onclick="filterMarket('crypto', this)">CRYPTO & MARFURI</button>
-            </div>
-            <div class="header-right">
+            <div class="logo">⬡ TERMINAL PRO AI</div>
+            <div style="text-align: right;">
                 <div id="live-clock">00:00:00</div>
-                <div style="font-size: 12px; font-weight: bold;">24-02-2026</div>
+                <div style="font-size: 10px;">Ultima actualizare: 25-02-2026 00:07 (RO)</div>
             </div>
         </header>
-
-        <div style="height:40px; overflow:hidden; border-bottom:1px solid var(--border); background: #131722;">
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            {
-              "symbols": [
-                {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
-                {"proName":"FX_IDC:EURUSD","title":"EUR/USD"},
-                {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
-                {"proName":"OANDA:XAUUSD","title":"Gold"}
-              ],
-              "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
-            }
-            </script>
-        </div>
-
-        <div class="pulse-container">
-            <div style="font-weight:800; color:var(--text-bold); font-size:12px; margin-bottom:5px;">● MARKET PULSE AI</div>
-            <div style="font-size: 14px; line-height: 1.6;">
-                Analiză algoritmică în timp real. Monitorizăm corelațiile inter-market și sentimentul global pentru a identifica direcția fluxului de capital.
-            </div>
-        </div>
-
         <div class="main-grid">
     
-            <div class="card" data-category="stocks">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">S&P 500</div>
-                <a href="https://news.google.com/rss/articles/CBMi5AFBVV95cUxQOUEzaHViRHpGS0txMUhlU1JnSkVIOWZOV19adUV6WGs3RzdJelpmX1NIRTBuRm1MNG84Z2UtRV9PV3lRSXhNWTIwZ3RuS3Q5VS1PSlA3YXhZZVB3dlZ0RTIxY3hrd0pObzVYYzZVM2U2cWtVcldlLVhyY0ZzZkRpTEtnbTVCTVUwMUpzM0tuOUJ4TmFLMnZCay04Z1hEbW10VWFvVWxkN190aVNRU0pyakVWaXlMNlFxRUFXWnFRM25EdXU2SExraGhsQ2lCNFRnekZqeWt3THR6RzgxS0Q4MlpGUVM?oc=5" class="card-title" target="_blank">Stock market today: Dow drops 800 points as S&P 500, Nasdaq slide on Trump tariff fears, AI 'scare trade' - Yahoo Finance</a>
+                <a href="https://news.google.com/rss/articles/CBMi5gFBVV95cUxQOGhVTG9Fd1pfNEIzcFEzSmlJaDhfZmwxZERMM1l1YVNHTXVpT1oxQUdUMnNhNjExd3k3TG93Y2hQVU1mTXFWQjR2bnhBRkszWnZ5b2RqQUVQM3NYMVZVVzVMUUVaMzM2MVBxdkd1WnRUZVRxdmt0UE4zZGZ0WGsxOERTMXF1MFNJVzBudlg5VnctZENVSXJzWmJmZWRER212bFc2OF9aZzNVRGhXSFNMR1VaQ3RvUFRiRXBjdHY4ako0dzZqd2xOVGdMZHlPU1N0VzJHRS1QMHBvckZLLW83QUZucWdUdw?oc=5" class="card-title" target="_blank">Stock market today: Dow, S&P 500, Nasdaq jump as software leads AI relief rally ahead of Nvidia earnings - Yahoo Finance</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="stocks">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Nasdaq 100</div>
-                <a href="https://news.google.com/rss/articles/CBMif0FVX3lxTE1YWVhkTmQtU0gxZk01Y1lGYTlhRWpFVjF0clpEQ2dJZ0NEc3Z2N29FWWh4Ml9uWDhGWWJoejRyRGNMeGtUTnFtUHZSaEUxd3h0Uk1XLS1Fb293cTlYQ0JIeDVhMG9JcEdvdU01NER4LUxVMHczVGNpUEFZOVlBc00?oc=5" class="card-title" target="_blank">Announcing the world’s first regulated, tokenized-equity perpetual futures, using xStocks - Kraken Blog</a>
+                <a href="https://news.google.com/rss/articles/CBMif0FVX3lxTE0yTzJjb1E2UmhxUTVWcS1GRVJMZ3ZrUXllNDg4bXBkc0Z2RWU3NWlGNkhlZkJta0IwRzczWmpMQlRjcGo4Q0c5YTBtZEkzWFJwWTA0dHUzcVhJWTBWQWlfVXVGNzhIbmgybV9mRUFkR2R1NzRhSHR5Y3l0NU5HcTQ?oc=5" class="card-title" target="_blank">MapLight Therapeutics, Inc. Rings the Closing Bell - Nasdaq</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="stocks">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Apple stock</div>
-                <a href="https://news.google.com/rss/articles/CBMiggFBVV95cUxOek5XTTh3ZjZDQ3BCVkFYTlNHSjN0bTFJdHVybFpWcEpTR25JeURoRFA2M056STEyLWt0aVIwQ3BKeUM3YnlsT3BhNmRGbFYtSDlubWZYSk5wM0tIN2VQbXBNdGpEOW50cnVYNEV0VUdDMm9VckNockstTU5OMVRzMmZn?oc=5" class="card-title" target="_blank">This "Siri-ous" Problem Could Be the Biggest Threat to Apple Stock - Yahoo Finance</a>
+                <a href="https://news.google.com/rss/articles/CBMiqwFBVV95cUxPNEZKZXhnUi1WQUpUejRxMkdESkxCQ0NPR0dIZFdSaS14MTNuTnpobW1oLUpZaE10QmpyeXVXZk5TWENCczNaMTBSN05CcjZwTmFHS2FiV2JTLXdqenRxZ3lvLVEzZ19ZS1J3bzZldmZzWUE3R3NOOXNpd091bkpGbW9TQ0dGc2stNjEwM1k0NGx3S0Exd1RsSUpGS2Y3RW1HXzZ3WFpyR3dWdDQ?oc=5" class="card-title" target="_blank">Apple stock price climbs as Houston Mac mini shift and China vote put tariffs in focus - TechStock²</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="stocks">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Tesla stock</div>
-                <a href="https://news.google.com/rss/articles/CBMicEFVX3lxTE9RV21ILUJmQUVVbFNnSnA4VTQ5MVlnNlZhTGJIc2dWV1R1eldhZkQ5Y1dwSjRWTmdTeVAtbDRDVi05ZzVNMFdVUVlKQW9iTDlscXA2MWxDM3NTMWN6WnNYNmtKSlF5aDJSMFRieEZ5X2o?oc=5" class="card-title" target="_blank">Below $400 Again, Is Tesla Stock a Buy? - Nasdaq</a>
+                <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxNY0pkdXVjX3lzR1EwZDAxLTVGcHg3YmU5ZjY5em1RV0NIVVE2dVhQRG1WWTYwSzFhVHZQamhfdWtGUFVMUkFDTVpqTzU3bVRyV2NBWTNQTVZsT21zVmMtbUd2X0pHUTc3ejNQLWNIMS1RamhidHlONno3czgyWXlyanpKUk15Zw?oc=5" class="card-title" target="_blank">Below $400 Again, Is Tesla Stock a Buy? - The Motley Fool</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="stocks">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Nvidia stock</div>
-                <a href="https://news.google.com/rss/articles/CBMidEFVX3lxTE5jMnRwUTk4amRwMmhfVVNfdDdBR0xJRF9QN3o1SzJaTHYwa3ZBNXBGMmpwSzZCMFFFNF9qVmZGU0VxUElDVTJRVXF5dzlZbEpMLW5EU1ZGVmt3VmxDUE1Od3JBZU1NUl9FZHlqUi1fTzRleVR0?oc=5" class="card-title" target="_blank">Racing to Catch Up With Nvidia, AMD Signs Chips-for-Stock Deal With Meta - The New York Times</a>
+                <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxPN2JuckFmZmlsOHViaXFtYXBWNmF5aXFLcUxHLWR5WE02UkN1SXpyTzV3NEF0MUIyMDNyR3FoVjhmRGVWbGdhNmFXbU11aWYySEhOVE1GSzhpUFhUcGlZclJySG14d0tDT1poN2lIUG5BeVMwT0E1b1NlR2VOMWpyVU5Mb0l2Z2ZHWGpyNjZkZ29nb3JKVGI1dQ?oc=5" class="card-title" target="_blank">Nvidia Stock Is Outperforming the Market in 2026. Is It a Buy? - The Motley Fool</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="forex">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">EURUSD</div>
                 <a href="https://news.google.com/rss/articles/CBMiZEFVX3lxTE90TzVkMEtENktkRVJFN3QxV0tYbVZJS0ozMTE5b0F6ekxwNjRFYTFveFhVZWRhbGJuWFRpU0JiUnpsa2FsbEZ5c0ZNeHJiZnc5TldpNmM1NGJPMFhlNUFkYWNjSlk?oc=5" class="card-title" target="_blank">EUR USD Technical Analysis - Investing.com</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="forex">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">GBPUSD</div>
-                <a href="https://news.google.com/rss/articles/CBMijAFBVV95cUxPMU5VWC1MaFVwTXBUWUJsSXppdU5HN19zNi03eWMzRFhVMmlXR2h3RnlJS0lrckFGSjhIczJEYTBnVnVpNVZVZGRxemxkZThCOGFZbHdVeVlnaW94eGtQX3dBRkVaaC1CZk5pM0lIY1F0R0N5QTV6T0lvdzRHUFRUV3dFWjJ5aTNMajB6Yw?oc=5" class="card-title" target="_blank">Chart GBP/USD Update: Leaning lower in range - Continuum Economics</a>
+                <a href="https://news.google.com/rss/articles/CBMioAFBVV95cUxNTnc0Z1RxenJPcFJDb21QN0wtZVFwS25HTG9yanhib0Mzb0Z6akNoQVkxemdkdkNGTkJXa3ZZUmJiM3I5MnprMVhIci1XTzgwUWd0c1doZGhXeXVyZGVNRE10V1pMcTNZVkZuZENtZm9aUFlqZkRoMzVMcGduR2lzRndFSy1VWUxZajhWOXVrV3BicFd3R2RKZFlCd0o2bzhT0gGsAUFVX3lxTE4xN2NLY0Z4bGw1UWk0cFBxeTFUNm1lSWt1QVF5S0FYek80cndKcG5PY3JtR1BXaGRYa1NWdkUxVFhOUl9sWW13SlFia2FZV3c2blZEdG5WejctTFpJZ3k4U2xpa0I3aDVJdlhjRjI1OGFaczU4dHhkTEwtRzM4ZldsYzcwVUJVR0Fza0ZLd1F0WFNYM05fakw3b1pVbkIyRWVkT0otcTk2akJhTk8?oc=5" class="card-title" target="_blank">Gold, USD Price Action Setups: USD/JPY, EUR/USD, GBP/USD - FOREX.com</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="forex">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">USDJPY</div>
-                <a href="https://news.google.com/rss/articles/CBMivgFBVV95cUxOd205Yy1xMDMyV2VWVFk0SVNaeVR2TkVwU29kRmFoZ1YwMUtYYkJVNm1mdHRWTFNBdk1GaWp3dG1vWnJzeDhYelhJTkpraE52dTJZWFM2UXd2QWVZcTVzeFdybjBGZkNnb2YzQUszbE9IZ0JFYmVrZzBvMWxaMndtcFRUWVg5aE9neW5ORGl2Q1JGM0ZIeUxUVkhnMldYY3dWMUd1R0RWcnZkd2pZcGdFZ3JwREt5M3c5QzJsZ0lB0gHKAUFVX3lxTE94MDNjdUpZQzRTTm1TWlVMMUkwcUM5ME5qRXVneDZiM1dfdUswTU1GWFJuQkEzT2h5QkJ2ajY5QkxOX053aVRVZ1lSV3I5bUhTM1ZHd3ByaFFVWm1HUUxwUm5iMEZ5d2N0WG5nZUZnZTRiM2l6VDh4Y0J2R1dfZUZZQ2VVdHJrTEpidVZuUkhQanJ5enhMblhJQ1Bvbm5ZeUJHVjh2cWhTN3YzNlJLSlg0SGxHdHo5bUJ2UjZUbmJ4QktCNEpRTVdvQVE?oc=5" class="card-title" target="_blank">USD/JPY Analysis: The yen weakens following comments from the Prime Minister - FOREX.com</a>
+                <a href="https://news.google.com/rss/articles/CBMioAFBVV95cUxNTnc0Z1RxenJPcFJDb21QN0wtZVFwS25HTG9yanhib0Mzb0Z6akNoQVkxemdkdkNGTkJXa3ZZUmJiM3I5MnprMVhIci1XTzgwUWd0c1doZGhXeXVyZGVNRE10V1pMcTNZVkZuZENtZm9aUFlqZkRoMzVMcGduR2lzRndFSy1VWUxZajhWOXVrV3BicFd3R2RKZFlCd0o2bzhT0gGsAUFVX3lxTE4xN2NLY0Z4bGw1UWk0cFBxeTFUNm1lSWt1QVF5S0FYek80cndKcG5PY3JtR1BXaGRYa1NWdkUxVFhOUl9sWW13SlFia2FZV3c2blZEdG5WejctTFpJZ3k4U2xpa0I3aDVJdlhjRjI1OGFaczU4dHhkTEwtRzM4ZldsYzcwVUJVR0Fza0ZLd1F0WFNYM05fakw3b1pVbkIyRWVkT0otcTk2akJhTk8?oc=5" class="card-title" target="_blank">Gold, USD Price Action Setups: USD/JPY, EUR/USD, GBP/USD - FOREX.com</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="crypto">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Gold market</div>
                 <a href="https://news.google.com/rss/articles/CBMieEFVX3lxTE02X0xrUTNESWtDMWtLeDRyS2JUTG1UVGFVSTdOR0czZVdmY19fM0s5MHFIZlg1alhoT2xLRnV4dUxlbHMxSkpOTVN1Zm5pUDJMYUh4LVlqOEZxSUpJYnJ2YXRuM1BKM2hfTU10VldYU3M0cjZvckg5SA?oc=5" class="card-title" target="_blank">Gold Pulls Back After Four-Day Ascent as Asian Traders Return - Yahoo Finance</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="crypto">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">WTI Oil</div>
-                <a href="https://news.google.com/rss/articles/CBMicEFVX3lxTE1QVUZmbEFLek45c2FDcW5MdnIwVUE5c2p4Q21nUVU4a0NOZzd2QTdxSGRQS3A1QTk2M1cwVFNfd0JVUFZYMnVBa01IeWJzNy1HZmR3cFJXZk1zdVNSRGJONkI3MEJ4RDQ3VjlocXhYdHc?oc=5" class="card-title" target="_blank">Crude Oil WTI Futures Chart - Investing.com</a>
+                <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxPeFVVbUZhUTItTVZObTJlLXlBYnNaRHd6anZSYjlGZ05teW91azFOM05za2FJTFljNVNlSUtPOWpJSWstaVRwWmNPY3QwbWRickZXNVFwaExia3lYal9yVE53YmJCTmF6QzQzOUp4aktZMDcyY2M0LW45Z0FrMUpEc01kUkJnMzZqaUluRHBMQnp5bVRxc01xTGhZZUM0d2c3WUE?oc=5" class="card-title" target="_blank">Crude Oil Prices Fall as the Dollar Strengthens and Geopolitical Risks Ease - Nasdaq</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
-            <div class="card" data-category="crypto">
+            <div class="card">
                 <span class="badge" style="background:#787b86">Neutru</span>
                 <div class="market-label">Bitcoin</div>
-                <a href="https://news.google.com/rss/articles/CBMikgFBVV95cUxQMWR6NFZxdWZ1WU1UMm9ONW03dzk5Q0N2Z0FMbkRORkF3XzE1eGZfWUJuVlo4eFZCZjI1M0hha0pZNVdWYTVpcXdOLXBqQnBSR3RZMGF3T080SVhBTGRVTWtwZHlBMWRBUHRheklkT3kwcHNDa2xGOWJlaFBuWTFUc0tKRUJUV3FxSHBZcVEzVkgwdw?oc=5" class="card-title" target="_blank">Bitdeer Liquidates Entire Bitcoin Treasury as Mining Margins Tighten — Will Other Crypto Miners Follow in 2026? - Yahoo Finance</a>
+                <a href="https://news.google.com/rss/articles/CBMitAFBVV95cUxPRXJiZkRwMEJwb2xRVWhiWk1USERHZGhnaEVwUHJYaWhFVWVBVTA2MkdXMW42ZFphYi0zMWhWTkd1ZDNpTmVWcDJ5UHUyVTkwNnlMWVNMNmpNWklibnpXSmRndlBMVEMyMGlsREo5Q1RUaXpOT2NFd3Z1NTRkNVVyVGZXa29WX0hXYkEwUFN3anNoQndmQlpoa0xuT0w5Q0Z4UW95cmt5OWdQVUdRWWNIV29aV0k?oc=5" class="card-title" target="_blank">Bitcoin Heads for Worst Month Since Crypto Collapse of June 2022 - Bloomberg</a>
                 <div class="section-label">Analiză Macro</div>
-                <div class="content-text">Analiză indisponibilă momentan.</div>
+                <div class="content-text">Verificați sursele oficiale.</div>
                 <div class="section-label">Strategie</div>
-                <div class="content-text" style="color:var(--text-bold); font-weight:600;">Monitorizare niveluri tehnice.</div>
+                <div class="content-text" style="color:white; font-weight:600;">Monitorizare niveluri tehnice.</div>
             </div>
         
         </div>
         <script>
-            function filterMarket(category, btn) {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.card').forEach(card => {
-                    card.classList.toggle('hidden', category !== 'all' && card.getAttribute('data-category') !== category);
-                });
-            }
             function updateClock() {
-                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB');
+                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('ro-RO');
             }
             setInterval(updateClock, 1000); updateClock();
         </script>

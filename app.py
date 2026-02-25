@@ -178,7 +178,7 @@ def main():
             analysis = analyze_with_ai(article_data['title'], q)
             article_data.update(analysis)
             all_articles.append(article_data)
-        time.sleep(1) # Prevenire rate-limit
+        time.sleep(4) # Prevenire rate-limit
 
     # 1. Actualizare site (se întâmplă la fiecare rulare - de 4 ori pe zi)
     with open("index.html", "w", encoding="utf-8") as f:
@@ -196,3 +196,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terminal Pro — Market News</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07090c;
+    --surface:   #0e1117;
+    --surface2:  #141820;
+    --border:    #1e2530;
+    --border2:   #2a3343;
+    --text:      #8b95a5;
+    --text-hi:   #dce3ed;
+    --text-dim:  #4e5a6b;
+    --accent:    #00d4aa;
+    --accent2:   #0099ff;
+    --red:       #ff4d6a;
+    --green:     #00d4aa;
+    --yellow:    #f5c842;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    background-image:
+      linear-gradient(rgba(0,212,170,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,.018) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,9,12,.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .08em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  .header-right { display: flex; align-items: center; gap: 20px; }
+
+  .session-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: .07em;
+  }
+  .s-open   { background:rgba(0,212,170,.12); color:var(--green);    border:1px solid rgba(0,212,170,.25); }
+  .s-pre    { background:rgba(245,200,66,.09); color:var(--yellow);  border:1px solid rgba(245,200,66,.2); }
+  .s-closed { background:rgba(78,90,107,.12); color:var(--text-dim); border:1px solid var(--border); }
+
+  .clock-wrap { text-align: right; }
+  #live-clock { font-family:var(--mono); font-size:13px; color:var(--text-hi); letter-spacing:.06em; }
+  .clock-tz   { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+  /* TABS */
+  .tabs-bar {
+    display: flex; align-items: center;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .tab-btn {
+    background: none; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 14px 18px;
+    border-bottom: 2px solid transparent;
+    transition: color .18s, border-color .18s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text-hi); border-bottom-color: var(--accent); }
+
+  .tab-count {
+    font-family: var(--mono); font-size: 10px;
+    padding: 1px 6px; border-radius: 10px;
+    background: var(--surface2); color: var(--text-dim);
+    border: 1px solid var(--border);
+    transition: all .18s;
+  }
+  .tab-btn.active .tab-count {
+    background: rgba(0,212,170,.12);
+    color: var(--accent);
+    border-color: rgba(0,212,170,.3);
+  }
+
+  .refresh-btn {
+    margin-left: auto;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .05em;
+    padding: 5px 12px; border-radius: 4px;
+    display: flex; align-items: center; gap: 6px;
+    transition: all .18s;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .refresh-btn.spin svg { animation: rotateit .65s linear infinite; }
+  @keyframes rotateit { to { transform: rotate(360deg); } }
+
+  /* CONTENT */
+  .tab-panel { display: none; padding: 28px 32px 64px; }
+  .tab-panel.active { display: block; }
+
+  /* SYMBOL BLOCK */
+  .sym-block { margin-bottom: 32px; animation: fadeUp .3s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .sym-header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .sym-name {
+    font-family: var(--mono); font-size:11px; font-weight:600;
+    letter-spacing:.1em; color:var(--accent); text-transform:uppercase;
+    white-space: nowrap;
+  }
+  .sym-line { flex:1; height:1px; background:var(--border); }
+  .sym-badge {
+    font-family: var(--mono); font-size:9px; font-weight:600;
+    padding:2px 7px; border-radius:3px; letter-spacing:.06em;
+    white-space: nowrap;
+  }
+  .b-stock     { background:rgba(0,153,255,.1);  color:var(--accent2); border:1px solid rgba(0,153,255,.2); }
+  .b-forex     { background:rgba(245,200,66,.09); color:var(--yellow); border:1px solid rgba(245,200,66,.2); }
+  .b-crypto    { background:rgba(255,77,106,.1);  color:var(--red);    border:1px solid rgba(255,77,106,.2); }
+  .b-commodity { background:rgba(139,149,165,.1); color:var(--text);   border:1px solid var(--border); }
+
+  /* NEWS CARDS */
+  .news-list { display:flex; flex-direction:column; gap:2px; }
+
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 13px 16px;
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none;
+    transition: border-color .15s, background .15s;
+  }
+  .news-card:hover { border-color: var(--border2); background: var(--surface2); }
+
+  .news-body { flex: 1; min-width: 0; }
+  .news-title {
+    font-size: 13.5px; font-weight: 400; line-height: 1.5;
+    color: var(--text);
+    transition: color .15s;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .news-card:hover .news-title { color: var(--text-hi); }
+
+  .news-meta { display:flex; align-items:center; gap:7px; margin-top:5px; }
+  .news-source { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
+  .meta-sep    { color:var(--text-dim); font-size:10px; }
+  .news-time   { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
+
+  .news-arrow {
+    color: var(--text-dim); font-size:18px; flex-shrink:0;
+    transition: color .15s, transform .15s;
+  }
+  .news-card:hover .news-arrow { color:var(--accent); transform:translateX(2px); }
+
+  /* SKELETON */
+  .skeleton-card {
+    background: var(--surface); border:1px solid var(--border);
+    border-radius:5px; padding:13px 16px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .skel {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 3px; height:13px;
+  }
+  .skel.w80{width:80%} .skel.w60{width:60%} .skel.w30{width:30%;height:10px}
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .err-msg { font-family:var(--mono); font-size:11px; color:var(--red); padding:8px 0; }
+
+  /* FOOTER */
+  footer {
+    position:fixed; bottom:0; left:0; right:0; height:30px;
+    background:rgba(7,9,12,.96); border-top:1px solid var(--border);
+    padding:0 32px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .ft-note { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
+  #ft-updated { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
+
+  @media(max-width:600px){
+    header,.tabs-bar,.tab-panel{padding-left:14px;padding-right:14px}
+    .tab-btn{padding:12px 10px;font-size:11px}
+    footer{padding:0 14px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    TERMINAL PRO
+  </div>
+  <div class="header-right">
+    <span class="session-badge s-closed" id="session-badge">— CLOSED —</span>
+    <div class="clock-wrap">
+      <div id="live-clock">00:00:00</div>
+      <div class="clock-tz" id="clock-tz">loading…</div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" id="tab-stocks" onclick="switchTab('stocks')">
+    Stocks <span class="tab-count" id="cnt-stocks">…</span>
+  </button>
+  <button class="tab-btn" id="tab-forex" onclick="switchTab('forex')">
+    Forex <span class="tab-count" id="cnt-forex">…</span>
+  </button>
+  <button class="tab-btn" id="tab-crypto" onclick="switchTab('crypto')">
+    Crypto <span class="tab-count" id="cnt-crypto">…</span>
+  </button>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M1 4v6h6M23 20v-6h-6"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+    </svg>
+    REFRESH
+  </button>
+</div>
+
+<div class="tab-panel active" id="panel-stocks"></div>
+<div class="tab-panel" id="panel-forex"></div>
+<div class="tab-panel" id="panel-crypto"></div>
+
+<footer>
+  <div class="ft-note">News via Google News RSS · Informational purposes only</div>
+  <div id="ft-updated">—</div>
+</footer>
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────────────────
+const PROXY   = 'https://api.allorigins.win/get?url=';
+const PER_SYM = 4;
+
+const SYMBOLS = {
+  stocks: [
+    { id:'sp500', label:'S&P 500',   badge:'stock',     query:'S&P 500 index market' },
+    { id:'ndx',   label:'Nasdaq 100',badge:'stock',     query:'Nasdaq 100 tech stocks' },
+    { id:'aapl',  label:'Apple',     badge:'stock',     query:'Apple AAPL stock earnings' },
+    { id:'tsla',  label:'Tesla',     badge:'stock',     query:'Tesla TSLA stock' },
+    { id:'nvda',  label:'Nvidia',    badge:'stock',     query:'Nvidia NVDA GPU AI stock' },
+  ],
+  forex: [
+    { id:'eurusd',label:'EUR/USD',   badge:'forex',     query:'EURUSD euro dollar forex' },
+    { id:'gbpusd',label:'GBP/USD',   badge:'forex',     query:'GBPUSD pound dollar forex' },
+    { id:'usdjpy',label:'USD/JPY',   badge:'forex',     query:'USDJPY yen dollar forex' },
+    { id:'gold',  label:'Gold XAU',  badge:'commodity', query:'gold price market XAU' },
+    { id:'oil',   label:'WTI Crude', badge:'commodity', query:'WTI crude oil price barrel' },
+  ],
+  crypto: [
+    { id:'btc',   label:'Bitcoin',   badge:'crypto',    query:'Bitcoin BTC price market' },
+    { id:'eth',   label:'Ethereum',  badge:'crypto',    query:'Ethereum ETH price market' },
+    { id:'sol',   label:'Solana',    badge:'crypto',    query:'Solana SOL crypto price' },
+  ],
+};
+
+// ── CLOCK ──────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').textContent =
+    now.toLocaleTimeString('en-US', { hour12: false });
+  document.getElementById('clock-tz').textContent =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
+
+  const ny   = new Date(now.toLocaleString('en-US', { timeZone:'America/New_York' }));
+  const h    = ny.getHours(), m = ny.getMinutes(), day = ny.getDay();
+  const mins = h * 60 + m;
+  const badge = document.getElementById('session-badge');
+
+  if (day === 0 || day === 6) {
+    badge.textContent = '— WEEKEND —';
+    badge.className = 'session-badge s-closed';
+  } else if (mins >= 570 && mins < 960) {
+    badge.textContent = '● NY OPEN';
+    badge.className = 'session-badge s-open';
+  } else if (mins >= 240 && mins < 570) {
+    badge.textContent = '◐ PRE-MARKET';
+    badge.className = 'session-badge s-pre';
+  } else if (mins >= 960 && mins < 1200) {
+    badge.textContent = '◑ AFTER HOURS';
+    badge.className = 'session-badge s-pre';
+  } else {
+    badge.textContent = '— CLOSED —';
+    badge.className = 'session-badge s-closed';
+  }
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── TABS ───────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['stocks','forex','crypto'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+  });
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+function decodeHTML(s) {
+  return s.replace(/&amp;/g,'&').replace(/&#39;/g,"'")
+          .replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+}
+
+function sourceFromTitle(title) {
+  const m = title.match(/ - ([^-]+)$/);
+  return m ? m[1].trim() : '';
+}
+
+function stripSource(title) {
+  return title.replace(/ - [^-]+$/, '').trim();
+}
+
+function relTime(dateStr) {
+  if (!dateStr) return '';
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+  if (isNaN(diff) || diff < 0) return '';
+  if (diff < 1)    return 'just now';
+  if (diff < 60)   return diff + 'm ago';
+  if (diff < 1440) return Math.floor(diff/60) + 'h ago';
+  return Math.floor(diff/1440) + 'd ago';
+}
+
+// ── RSS FETCH ──────────────────────────────────────────────────────────────────
+const _cache = {};
+
+async function fetchNews(query) {
+  if (_cache[query]) return _cache[query];
+  const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const res = await fetch(PROXY + encodeURIComponent(rss));
+  if (!res.ok) throw new Error('network error');
+  const json = await res.json();
+  const doc  = new DOMParser().parseFromString(json.contents, 'application/xml');
+  const items = [...doc.querySelectorAll('item')].slice(0, PER_SYM).map(el => ({
+    title:  decodeHTML(el.querySelector('title')?.textContent || ''),
+    link:   el.querySelector('link')?.textContent?.trim() || '#',
+    source: el.querySelector('source')?.textContent || sourceFromTitle(el.querySelector('title')?.textContent || ''),
+    date:   el.querySelector('pubDate')?.textContent || '',
+  }));
+  _cache[query] = items;
+  return items;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────────
+function skeletons() {
+  return [1,2,3].map(() =>
+    `<div class="skeleton-card">
+      <div class="skel w80"></div>
+      <div class="skel w60"></div>
+      <div class="skel w30"></div>
+    </div>`
+  ).join('');
+}
+
+function renderCards(items) {
+  if (!items.length) return '<div class="err-msg">No articles found.</div>';
+  return items.map(a =>
+    `<a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer">
+      <div class="news-body">
+        <div class="news-title">${stripSource(a.title)}</div>
+        <div class="news-meta">
+          <span class="news-source">${a.source}</span>
+          ${relTime(a.date) ? `<span class="meta-sep">·</span><span class="news-time">${relTime(a.date)}</span>` : ''}
+        </div>
+      </div>
+      <span class="news-arrow">›</span>
+    </a>`
+  ).join('');
+}
+
+function buildPanel(tab) {
+  const panel = document.getElementById('panel-' + tab);
+  panel.innerHTML = SYMBOLS[tab].map((sym, i) =>
+    `<div class="sym-block" style="animation-delay:${i*50}ms">
+      <div class="sym-header">
+        <span class="sym-name">${sym.label}</span>
+        <span class="sym-badge b-${sym.badge}">${sym.badge.toUpperCase()}</span>
+        <div class="sym-line"></div>
+      </div>
+      <div class="news-list" id="news-${sym.id}">${skeletons()}</div>
+    </div>`
+  ).join('');
+}
+
+async function loadTab(tab) {
+  buildPanel(tab);
+  let count = 0;
+  const results = await Promise.allSettled(
+    SYMBOLS[tab].map(sym => fetchNews(sym.query).then(items => ({ sym, items })))
+  );
+  results.forEach(r => {
+    if (r.status === 'fulfilled') {
+      const { sym, items } = r.value;
+      const el = document.getElementById('news-' + sym.id);
+      if (el) el.innerHTML = renderCards(items);
+      count += items.length;
+    } else {
+      console.warn('Failed to load a symbol:', r.reason);
+    }
+  });
+  document.getElementById('cnt-' + tab).textContent = count;
+}
+
+async function loadAll() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spin');
+  Object.keys(_cache).forEach(k => delete _cache[k]);
+  await Promise.all(['stocks','forex','crypto'].map(loadTab));
+  btn.classList.remove('spin');
+  document.getElementById('ft-updated').textContent =
+    'Updated ' + new Date().toLocaleTimeString('en-US', { hour12:false });
+}
+
+loadAll();
+</script>
+</body>
+</html>

@@ -293,10 +293,14 @@ async function fetchViaProxy(url, proxyIdx = activeProxyIdx) {
   const proxyUrl = PROXIES[proxyIdx](url);
   const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  // allorigins & corsproxy.io return { contents: "..." }
-  // codetabs returns the raw text directly
-  return json.contents ?? json;
+  const raw = await res.text();
+  try {
+    const json = JSON.parse(raw);
+    return json.contents ?? raw;
+  } catch {
+    return raw;
+  }
+}
 }
 
 async function fetchWithFallback(url) {
@@ -399,7 +403,7 @@ async function fetchNews(query) {
   const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
   const text = await fetchWithFallback(rss);
   const doc  = new DOMParser().parseFromString(
-    typeof text === 'string' ? text : JSON.stringify(text),
+   typeof text === 'string' ? text : '',
     'application/xml'
   );
   const items = [...doc.querySelectorAll('item')].slice(0, PER_SYM).map(el => ({

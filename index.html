@@ -53,16 +53,13 @@
 
   .logo {
     font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: .08em;
+    font-size: 13px; font-weight: 600;
+    color: var(--accent); letter-spacing: .08em;
     display: flex; align-items: center; gap: 10px;
   }
   .logo-dot {
     width: 8px; height: 8px;
-    background: var(--accent);
-    border-radius: 50%;
+    background: var(--accent); border-radius: 50%;
     box-shadow: 0 0 10px var(--accent);
     animation: pulse 2s ease-in-out infinite;
   }
@@ -71,12 +68,9 @@
   .header-right { display: flex; align-items: center; gap: 20px; }
 
   .session-badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 600;
-    letter-spacing: .07em;
+    font-family: var(--mono); font-size: 10px;
+    padding: 4px 10px; border-radius: 4px;
+    font-weight: 600; letter-spacing: .07em;
   }
   .s-open   { background:rgba(0,212,170,.12); color:var(--green);    border:1px solid rgba(0,212,170,.25); }
   .s-pre    { background:rgba(245,200,66,.09); color:var(--yellow);  border:1px solid rgba(245,200,66,.2); }
@@ -93,7 +87,6 @@
     border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
-
   .tab-btn {
     background: none; border: none; cursor: pointer;
     font-family: var(--sans); font-size: 12px; font-weight: 500;
@@ -111,12 +104,10 @@
     font-family: var(--mono); font-size: 10px;
     padding: 1px 6px; border-radius: 10px;
     background: var(--surface2); color: var(--text-dim);
-    border: 1px solid var(--border);
-    transition: all .18s;
+    border: 1px solid var(--border); transition: all .18s;
   }
   .tab-btn.active .tab-count {
-    background: rgba(0,212,170,.12);
-    color: var(--accent);
+    background: rgba(0,212,170,.12); color: var(--accent);
     border-color: rgba(0,212,170,.3);
   }
 
@@ -150,8 +141,7 @@
   .sym-line { flex:1; height:1px; background:var(--border); }
   .sym-badge {
     font-family: var(--mono); font-size:9px; font-weight:600;
-    padding:2px 7px; border-radius:3px; letter-spacing:.06em;
-    white-space: nowrap;
+    padding:2px 7px; border-radius:3px; letter-spacing:.06em; white-space:nowrap;
   }
   .b-stock     { background:rgba(0,153,255,.1);  color:var(--accent2); border:1px solid rgba(0,153,255,.2); }
   .b-forex     { background:rgba(245,200,66,.09); color:var(--yellow); border:1px solid rgba(245,200,66,.2); }
@@ -162,10 +152,8 @@
   .news-list { display:flex; flex-direction:column; gap:2px; }
 
   .news-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 13px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; padding: 13px 16px;
     display: flex; align-items: center; gap: 14px;
     text-decoration: none;
     transition: border-color .15s, background .15s;
@@ -174,11 +162,9 @@
 
   .news-body { flex: 1; min-width: 0; }
   .news-title {
-    font-size: 13.5px; font-weight: 400; line-height: 1.5;
-    color: var(--text);
+    font-size: 13.5px; font-weight: 400; line-height: 1.5; color: var(--text);
     transition: color .15s;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .news-card:hover .news-title { color: var(--text-hi); }
 
@@ -208,7 +194,24 @@
   .skel.w80{width:80%} .skel.w60{width:60%} .skel.w30{width:30%;height:10px}
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-  .err-msg { font-family:var(--mono); font-size:11px; color:var(--red); padding:8px 0; }
+  .err-msg {
+    font-family:var(--mono); font-size:11px; color:var(--red);
+    padding:10px 14px; background:rgba(255,77,106,.05);
+    border:1px solid rgba(255,77,106,.15); border-radius:5px;
+  }
+
+  /* STATUS BAR */
+  #status-bar {
+    font-family:var(--mono); font-size:10px; color:var(--text-dim);
+    padding: 6px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-dot { width:6px; height:6px; border-radius:50%; background:var(--text-dim); flex-shrink:0; }
+  .status-dot.ok { background:var(--green); box-shadow:0 0 6px var(--green); }
+  .status-dot.warn { background:var(--yellow); }
+  .status-dot.err { background:var(--red); }
 
   /* FOOTER */
   footer {
@@ -220,7 +223,7 @@
   #ft-updated { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
 
   @media(max-width:600px){
-    header,.tabs-bar,.tab-panel{padding-left:14px;padding-right:14px}
+    header,.tabs-bar,.tab-panel,#status-bar{padding-left:14px;padding-right:14px}
     .tab-btn{padding:12px 10px;font-size:11px}
     footer{padding:0 14px}
   }
@@ -261,6 +264,11 @@
   </button>
 </div>
 
+<div id="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span id="status-text">Connecting to news feeds…</span>
+</div>
+
 <div class="tab-panel active" id="panel-stocks"></div>
 <div class="tab-panel" id="panel-forex"></div>
 <div class="tab-panel" id="panel-crypto"></div>
@@ -271,33 +279,66 @@
 </footer>
 
 <script>
-// ── DATA ───────────────────────────────────────────────────────────────────────
-const PROXY   = 'https://api.allorigins.win/get?url=';
+// ── CORS PROXY POOL — tries each in order until one works ─────────────────────
+const PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+// Which proxy is currently working best
+let activeProxyIdx = 0;
+
+async function fetchViaProxy(url, proxyIdx = activeProxyIdx) {
+  const proxyUrl = PROXIES[proxyIdx](url);
+  const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  // allorigins & corsproxy.io return { contents: "..." }
+  // codetabs returns the raw text directly
+  return json.contents ?? json;
+}
+
+async function fetchWithFallback(url) {
+  for (let i = 0; i < PROXIES.length; i++) {
+    const idx = (activeProxyIdx + i) % PROXIES.length;
+    try {
+      const result = await fetchViaProxy(url, idx);
+      activeProxyIdx = idx; // remember the working proxy
+      return result;
+    } catch (e) {
+      console.warn(`Proxy ${idx} failed for ${url}:`, e.message);
+    }
+  }
+  throw new Error('All proxies failed');
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
 const PER_SYM = 4;
 
 const SYMBOLS = {
   stocks: [
     { id:'sp500', label:'S&P 500',   badge:'stock',     query:'S&P 500 index market' },
     { id:'ndx',   label:'Nasdaq 100',badge:'stock',     query:'Nasdaq 100 tech stocks' },
-    { id:'aapl',  label:'Apple',     badge:'stock',     query:'Apple AAPL stock earnings' },
+    { id:'aapl',  label:'Apple',     badge:'stock',     query:'Apple AAPL stock' },
     { id:'tsla',  label:'Tesla',     badge:'stock',     query:'Tesla TSLA stock' },
-    { id:'nvda',  label:'Nvidia',    badge:'stock',     query:'Nvidia NVDA GPU AI stock' },
+    { id:'nvda',  label:'Nvidia',    badge:'stock',     query:'Nvidia NVDA stock' },
   ],
   forex: [
     { id:'eurusd',label:'EUR/USD',   badge:'forex',     query:'EURUSD euro dollar forex' },
-    { id:'gbpusd',label:'GBP/USD',   badge:'forex',     query:'GBPUSD pound dollar forex' },
+    { id:'gbpusd',label:'GBP/USD',   badge:'forex',     query:'GBPUSD pound sterling forex' },
     { id:'usdjpy',label:'USD/JPY',   badge:'forex',     query:'USDJPY yen dollar forex' },
-    { id:'gold',  label:'Gold XAU',  badge:'commodity', query:'gold price market XAU' },
-    { id:'oil',   label:'WTI Crude', badge:'commodity', query:'WTI crude oil price barrel' },
+    { id:'gold',  label:'Gold XAU',  badge:'commodity', query:'gold price XAU market' },
+    { id:'oil',   label:'WTI Crude', badge:'commodity', query:'WTI crude oil price' },
   ],
   crypto: [
-    { id:'btc',   label:'Bitcoin',   badge:'crypto',    query:'Bitcoin BTC price market' },
-    { id:'eth',   label:'Ethereum',  badge:'crypto',    query:'Ethereum ETH price market' },
-    { id:'sol',   label:'Solana',    badge:'crypto',    query:'Solana SOL crypto price' },
+    { id:'btc',   label:'Bitcoin',   badge:'crypto',    query:'Bitcoin BTC price' },
+    { id:'eth',   label:'Ethereum',  badge:'crypto',    query:'Ethereum ETH price' },
+    { id:'sol',   label:'Solana',    badge:'crypto',    query:'Solana SOL crypto' },
   ],
 };
 
-// ── CLOCK ──────────────────────────────────────────────────────────────────────
+// ── CLOCK & SESSION ───────────────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
   document.getElementById('live-clock').textContent =
@@ -306,31 +347,26 @@ function updateClock() {
     Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
 
   const ny   = new Date(now.toLocaleString('en-US', { timeZone:'America/New_York' }));
-  const h    = ny.getHours(), m = ny.getMinutes(), day = ny.getDay();
-  const mins = h * 60 + m;
+  const mins = ny.getHours() * 60 + ny.getMinutes();
+  const day  = ny.getDay();
   const badge = document.getElementById('session-badge');
 
   if (day === 0 || day === 6) {
-    badge.textContent = '— WEEKEND —';
-    badge.className = 'session-badge s-closed';
+    badge.textContent = '— WEEKEND —'; badge.className = 'session-badge s-closed';
   } else if (mins >= 570 && mins < 960) {
-    badge.textContent = '● NY OPEN';
-    badge.className = 'session-badge s-open';
+    badge.textContent = '● NY OPEN';   badge.className = 'session-badge s-open';
   } else if (mins >= 240 && mins < 570) {
-    badge.textContent = '◐ PRE-MARKET';
-    badge.className = 'session-badge s-pre';
+    badge.textContent = '◐ PRE-MARKET'; badge.className = 'session-badge s-pre';
   } else if (mins >= 960 && mins < 1200) {
-    badge.textContent = '◑ AFTER HOURS';
-    badge.className = 'session-badge s-pre';
+    badge.textContent = '◑ AFTER HOURS'; badge.className = 'session-badge s-pre';
   } else {
-    badge.textContent = '— CLOSED —';
-    badge.className = 'session-badge s-closed';
+    badge.textContent = '— CLOSED —';  badge.className = 'session-badge s-closed';
   }
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── TABS ───────────────────────────────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   ['stocks','forex','crypto'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -338,21 +374,13 @@ function switchTab(tab) {
   });
 }
 
-// ── UTILS ──────────────────────────────────────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────────────────────────────────
 function decodeHTML(s) {
   return s.replace(/&amp;/g,'&').replace(/&#39;/g,"'")
           .replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
 }
-
-function sourceFromTitle(title) {
-  const m = title.match(/ - ([^-]+)$/);
-  return m ? m[1].trim() : '';
-}
-
-function stripSource(title) {
-  return title.replace(/ - [^-]+$/, '').trim();
-}
-
+function sourceFromTitle(t) { const m = t.match(/ - ([^-]+)$/); return m ? m[1].trim() : ''; }
+function stripSource(t) { return t.replace(/ - [^-]+$/, '').trim(); }
 function relTime(dateStr) {
   if (!dateStr) return '';
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
@@ -363,41 +391,39 @@ function relTime(dateStr) {
   return Math.floor(diff/1440) + 'd ago';
 }
 
-// ── RSS FETCH ──────────────────────────────────────────────────────────────────
+// ── RSS FETCH ─────────────────────────────────────────────────────────────────
 const _cache = {};
 
 async function fetchNews(query) {
   if (_cache[query]) return _cache[query];
   const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
-  const res = await fetch(PROXY + encodeURIComponent(rss));
-  if (!res.ok) throw new Error('network error');
-  const json = await res.json();
-  const doc  = new DOMParser().parseFromString(json.contents, 'application/xml');
+  const text = await fetchWithFallback(rss);
+  const doc  = new DOMParser().parseFromString(
+    typeof text === 'string' ? text : JSON.stringify(text),
+    'application/xml'
+  );
   const items = [...doc.querySelectorAll('item')].slice(0, PER_SYM).map(el => ({
     title:  decodeHTML(el.querySelector('title')?.textContent || ''),
     link:   el.querySelector('link')?.textContent?.trim() || '#',
     source: el.querySelector('source')?.textContent || sourceFromTitle(el.querySelector('title')?.textContent || ''),
     date:   el.querySelector('pubDate')?.textContent || '',
   }));
+  if (!items.length) throw new Error('No items parsed');
   _cache[query] = items;
   return items;
 }
 
-// ── RENDER ─────────────────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function skeletons() {
-  return [1,2,3].map(() =>
-    `<div class="skeleton-card">
-      <div class="skel w80"></div>
-      <div class="skel w60"></div>
-      <div class="skel w30"></div>
-    </div>`
-  ).join('');
+  return [1,2,3].map(() => `
+    <div class="skeleton-card">
+      <div class="skel w80"></div><div class="skel w60"></div><div class="skel w30"></div>
+    </div>`).join('');
 }
 
 function renderCards(items) {
-  if (!items.length) return '<div class="err-msg">No articles found.</div>';
-  return items.map(a =>
-    `<a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer">
+  return items.map(a => `
+    <a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer">
       <div class="news-body">
         <div class="news-title">${stripSource(a.title)}</div>
         <div class="news-meta">
@@ -406,49 +432,72 @@ function renderCards(items) {
         </div>
       </div>
       <span class="news-arrow">›</span>
-    </a>`
-  ).join('');
+    </a>`).join('');
 }
 
 function buildPanel(tab) {
-  const panel = document.getElementById('panel-' + tab);
-  panel.innerHTML = SYMBOLS[tab].map((sym, i) =>
-    `<div class="sym-block" style="animation-delay:${i*50}ms">
+  document.getElementById('panel-'+tab).innerHTML = SYMBOLS[tab].map((sym, i) => `
+    <div class="sym-block" style="animation-delay:${i*40}ms">
       <div class="sym-header">
         <span class="sym-name">${sym.label}</span>
         <span class="sym-badge b-${sym.badge}">${sym.badge.toUpperCase()}</span>
         <div class="sym-line"></div>
       </div>
       <div class="news-list" id="news-${sym.id}">${skeletons()}</div>
-    </div>`
-  ).join('');
+    </div>`).join('');
+}
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+function setStatus(state, text) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + (state === 'ok' ? 'ok' : state === 'warn' ? 'warn' : 'err');
+  document.getElementById('status-text').textContent = text;
 }
 
 async function loadTab(tab) {
   buildPanel(tab);
-  let count = 0;
-  const results = await Promise.allSettled(
-    SYMBOLS[tab].map(sym => fetchNews(sym.query).then(items => ({ sym, items })))
-  );
-  results.forEach(r => {
-    if (r.status === 'fulfilled') {
-      const { sym, items } = r.value;
-      const el = document.getElementById('news-' + sym.id);
+  let loaded = 0, failed = 0;
+
+  // Load one at a time with a small delay to avoid proxy rate limits
+  for (const sym of SYMBOLS[tab]) {
+    try {
+      const items = await fetchNews(sym.query);
+      const el = document.getElementById('news-'+sym.id);
       if (el) el.innerHTML = renderCards(items);
-      count += items.length;
-    } else {
-      console.warn('Failed to load a symbol:', r.reason);
+      loaded += items.length;
+    } catch (e) {
+      const el = document.getElementById('news-'+sym.id);
+      if (el) el.innerHTML = `<div class="err-msg">⚠ Could not load news for ${sym.label}. Try refreshing.</div>`;
+      failed++;
     }
-  });
-  document.getElementById('cnt-' + tab).textContent = count;
+    // Small stagger between requests to avoid rate limiting
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  document.getElementById('cnt-'+tab).textContent = loaded;
+  return { loaded, failed };
 }
 
 async function loadAll() {
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spin');
   Object.keys(_cache).forEach(k => delete _cache[k]);
-  await Promise.all(['stocks','forex','crypto'].map(loadTab));
+  setStatus('warn', 'Fetching news feeds…');
+
+  const results = await Promise.all(['stocks','forex','crypto'].map(loadTab));
+  const totalFailed = results.reduce((s, r) => s + r.failed, 0);
+  const totalLoaded = results.reduce((s, r) => s + r.loaded, 0);
+
   btn.classList.remove('spin');
+
+  if (totalFailed === 0) {
+    setStatus('ok', `${totalLoaded} articles loaded · All feeds online`);
+  } else if (totalLoaded > 0) {
+    setStatus('warn', `${totalLoaded} articles loaded · ${totalFailed} feed(s) failed — try refreshing`);
+  } else {
+    setStatus('err', 'All feeds failed — check your connection or try refreshing');
+  }
+
   document.getElementById('ft-updated').textContent =
     'Updated ' + new Date().toLocaleTimeString('en-US', { hour12:false });
 }
